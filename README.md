@@ -82,9 +82,9 @@ All code will be developed only after the official hackathon start.
   - [ ] Endpoints to support all dashboard flows:
     - [x] Auth integration with Google OAuth (token verification / session)
     - [x] CRUD for tasks
-    - [ ] File upload + storage
-    - [ ] Dataset preparation job trigger + status
-    - [ ] Fine-tuning job trigger + status
+    - [x] File upload + storage
+    - [x] Dataset preparation job trigger + status
+    - [x] Fine-tuning job trigger + status
     - [ ] Publish-to-Ollama job trigger + status
 - [x] Confirm Gemini API credits from hackathon organisers
 - [ ] Create dedicated GCP project for fine-tune.app
@@ -103,10 +103,10 @@ All code will be developed only after the official hackathon start.
 
 - [] Draft bullet-point demo script (what to show in 3 minutes)
 - [ ] Record screen demo of the full flow:
-  - [ ] Create task
-  - [ ] Upload data
+  - [x] Create task
+  - [x] Upload data
   - [x] Prepare JSONL
-  - [ ] Run fine-tune
+  - [x] Run fine-tune
   - [ ] Publish to Ollama
   - [ ] Use the resulting model
 - [ ] Record and add voice-over (English)
@@ -134,13 +134,13 @@ All code will be developed only after the official hackathon start.
 
 - **10:15–11:00**
   - ~~Finalise idea and repo structure~~
-  - Create GCP project, Hugging Face account, Ollama namespace
+  - Create GCP project, ~~Hugging Face account~~, ~~Ollama namespace~~
   - Skeleton ~~`fine-tune-app-landing`~~, ~~`fine-tune-app-dashboard`~~, ~~`fine-tune-app-api`~~
 
 - **11:00–12:00**
   - ~~Core API scaffolding (FastAPI + Docker)~~
   - ~~Define task, file, and job models~~
-  - Basic endpoints for tasks and file upload
+  - ~~Basic endpoints for tasks and file upload~~
 
 - **12:00–12:30**
   - ~~Quick landing v1 with clear explanation + hackathon context~~
@@ -149,13 +149,13 @@ All code will be developed only after the official hackathon start.
 - **12:30–13:30**
   - Dashboard:
     - ~~Google OAuth wiring~~
-    - Task listing + “New task” popup
-    - File upload + listing + delete
+    - ~~Task listing + “New task” popup~~
+    - ~~File upload + listing + delete~~
 
 - **13:30–14:30**
   - Backend jobs:
-    - Dataset preparation → JSONL
-    - Fine-tuning job wiring (stubbed then real)
+    - ~~Dataset preparation → JSONL~~
+    - ~~Fine-tuning job wiring (stubbed then real)~~
     - Basic status polling from UI
 
 - **14:30–15:15**

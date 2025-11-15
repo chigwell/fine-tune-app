@@ -127,15 +127,15 @@ All code will be developed only after the official hackathon start.
 ## 15 November 2025 – Working timeline
 
 **Hackathon schedule (London time)**  
-- 10:00 — Welcome kick-off  
-- 17:00 — Submissions due (target: **submit by 16:50**)  
+- ~~10:00 — Welcome kick-off~~
+- 17:00 — Submissions due (target: **submit by 16:50**) 
 
 **Internal plan (target start: 10:15, deadline: 16:50)**
 
 - **10:15–11:00**
-  - Finalise idea and repo structure
+  - ~~Finalise idea and repo structure~~
   - Create GCP project, Hugging Face account, Ollama namespace
-  - Skeleton `fine-tune-app-landing`, `fine-tune-app-dashboard`, `fine-tune-app-api`
+  - Skeleton ~~`fine-tune-app-landing`~~, `fine-tune-app-dashboard`, `fine-tune-app-api`
 
 - **11:00–12:00**
   - Core API scaffolding (FastAPI + Docker)

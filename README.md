@@ -49,17 +49,17 @@ All code will be developed only after the official hackathon start.
   - [x] “New task” flow:
     - [x] “+” button
     - [x] Popup/modal for creating draft fine-tuning task
-  - [ ] File upload:
-    - [ ] Drag-and-drop upload for user files
-    - [ ] List of uploaded files
-    - [ ] Ability to delete files
-  - [ ] Start dataset preparation job:
-    - [ ] Trigger JSONL preparation job
-    - [ ] Poll job status
-    - [ ] Show progress/status in popup
-  - [ ] Start fine-tuning job:
-    - [ ] Popup for configuration (model, epochs, LR, etc.)
-    - [ ] Polling and monitoring of training status
+  - [x] File upload:
+    - [x] Drag-and-drop upload for user files
+    - [x] List of uploaded files
+    - [x] Ability to delete files
+  - [x] Start dataset preparation job:
+    - [x] Trigger JSONL preparation job
+    - [x] Poll job status
+    - [x] Show progress/status in popup
+  - [x] Start fine-tuning job:
+    - [x] Popup for configuration (model, epochs, LR, etc.)
+    - [x] Polling and monitoring of training status
   - [ ] Start “publish to Ollama” job:
     - [ ] Popup for publish action
     - [ ] Polling and monitoring of publish status

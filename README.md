@@ -34,10 +34,10 @@ All code will be developed only after the official hackathon start.
 - [x] Register domain for fine-tune.app (or suitable alternative)
 - [x] Implement one-page landing with a strong “wow” effect
 - [x] Deploy landing:
-  - [ ] ~~GitHub Pages **or**~~
-  - [ ] ~~Vercel **or**~~
+  - [x] ~~GitHub Pages **or**~~
+  - [x] ~~Vercel **or**~~
   - [x] Cloudflare Pages
-- [ ] Add concise README to `fine-tune-app-landing`
+- [x] Add concise README to `fine-tune-app-landing`
 
 ---
 
@@ -60,17 +60,17 @@ All code will be developed only after the official hackathon start.
   - [x] Start fine-tuning job:
     - [x] Popup for configuration (model, epochs, LR, etc.)
     - [x] Polling and monitoring of training status
-  - [ ] Start “publish to Ollama” job:
-    - [ ] Popup for publish action
-    - [ ] Polling and monitoring of publish status
+  - [x] Start “publish to Ollama” job:
+    - [x] Popup for publish action
+    - [x] Polling and monitoring of publish status
 - [ ] Optional extras:
   - [ ] Store credentials / API keys via UI (encrypted)
   - [ ] Basic benchmarking (latency / quality / cost metrics)
   - [ ] Simple JSONL editor in browser
 - [ ] Deploy dashboard:
-  - [ ] GitHub Pages **or**
-  - [ ] Vercel **or**
-  - [ ] Cloudflare Pages
+  - [x] ~~GitHub Pages **or**~~
+  - [x] ~~Vercel **or**~~
+  - [x] Cloudflare Pages
 - [ ] Add README to `fine-tune-app-dashboard`
 
 ---
@@ -87,14 +87,14 @@ All code will be developed only after the official hackathon start.
     - [x] Fine-tuning job trigger + status
     - [ ] Publish-to-Ollama job trigger + status
 - [x] Confirm Gemini API credits from hackathon organisers
-- [ ] Create dedicated GCP project for fine-tune.app
+- [x] Create dedicated GCP project for fine-tune.app
 - [ ] Deploy API:
-  - [ ] GCP (Cloud Run / GCE / GKE) **or**
-  - [ ] Cloudflare Tunnel from local machine
-- [ ] Create dedicated accounts:
-  - [ ] Hugging Face (project-specific)
-  - [ ] Ollama (project-specific / namespace)
-- [ ] Prepare test datasets and run several small fine-tuning jobs end-to-end
+  - [x] ~~GCP (Cloud Run / GCE / GKE) **or**~~
+  - [x] Cloudflare Tunnel from local machine
+- [x] Create dedicated accounts:
+  - [x] Hugging Face (project-specific)
+  - [x] Ollama (project-specific / namespace)
+- [x] Prepare test datasets and run several small fine-tuning jobs end-to-end
 - [ ] Add README to `fine-tune-app-api`
 
 ---
@@ -107,8 +107,8 @@ All code will be developed only after the official hackathon start.
   - [x] Upload data
   - [x] Prepare JSONL
   - [x] Run fine-tune
-  - [ ] Publish to Ollama
-  - [ ] Use the resulting model
+  - [x] Publish to Ollama
+  - [x] Use the resulting model
 - [ ] Record and add voice-over (English)
 - [ ] Upload demo video to YouTube (unlisted or public)
 - [ ] Prepare text for submission form (problem statement fit, impact, tech stack)
@@ -159,11 +159,11 @@ All code will be developed only after the official hackathon start.
     - Basic status polling from UI
 
 - **14:30–15:15**
-  - Publish-to-Ollama flow (API + UI)
-  - Run at least one small real fine-tuning end-to-end
+  - ~~Publish-to-Ollama flow (API + UI)~~
+  - ~~Run at least one small real fine-tuning end-to-end~~
 
 - **15:15–16:00**
-  - Stabilise demo path (happy path only)
+  - ~~Stabilise demo path (happy path only)~~
   - Minimal benchmarking / stats if time allows
   - Tighten copy on landing and dashboard
 

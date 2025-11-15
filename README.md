@@ -86,7 +86,7 @@ All code will be developed only after the official hackathon start.
     - [ ] Dataset preparation job trigger + status
     - [ ] Fine-tuning job trigger + status
     - [ ] Publish-to-Ollama job trigger + status
-- [ ] Confirm Gemini API credits from hackathon organisers
+- [x] Confirm Gemini API credits from hackathon organisers
 - [ ] Create dedicated GCP project for fine-tune.app
 - [ ] Deploy API:
   - [ ] GCP (Cloud Run / GCE / GKE) **or**

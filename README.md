@@ -43,7 +43,7 @@ All code will be developed only after the official hackathon start.
 
 ### 2. Dashboard UI
 
-- [ ] Implement frontend dashboard:
+- [x] Implement frontend dashboard:
   - [x] Auth, login, and registration via Google OAuth
   - [x] Task listing (table / cards)
   - [x] “New task” flow:
@@ -71,7 +71,7 @@ All code will be developed only after the official hackathon start.
   - [x] ~~GitHub Pages **or**~~
   - [x] ~~Vercel **or**~~
   - [x] Cloudflare Pages
-- [] Add README to `fine-tune-app-dashboard`
+- [x] Add README to `fine-tune-app-dashboard`
 
 ---
 
@@ -109,12 +109,12 @@ All code will be developed only after the official hackathon start.
   - [x] Run fine-tune
   - [x] Publish to Ollama
   - [x] Use the resulting model
-- [ ] Record and add voice-over (English)
-- [ ] Upload demo video to YouTube (unlisted or public)
-- [ ] Prepare text for submission form (problem statement fit, impact, tech stack)
-- [ ] Submit project via official form:  
+- [ ] ~~Record and add voice-over~~
+- [x] Upload demo video to YouTube (unlisted or public)
+- [x] Prepare text for submission form (problem statement fit, impact, tech stack)
+- [x] Submit project via official form:  
       https://cerebralvalley.ai/e/vibe-code-gemini-london/hackathon/submit
-- [ ] Prepare short live pitch script for on-stage / judge demo
+- [x] Prepare short live pitch script for on-stage / judge demo
 
 ---
 
@@ -168,12 +168,12 @@ All code will be developed only after the official hackathon start.
   - ~~Tighten copy on landing and dashboard~~
 
 - **16:00–16:30**
-  - Record demo video (screen + voice)
-  - Upload to YouTube
-  - Write submission text (impact, tech, creativity)
+  - ~~Record demo video (screen + voice)~~
+  - ~~Upload to YouTube~~
+  - ~~Write submission text (impact, tech, creativity)~~
 
 - **16:30–16:50**
-  - Submit project via official form
+  - ~~Submit project via official form~~
   - Final README and checklist updates
   - Quick rehearsal for live demo
 

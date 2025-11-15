@@ -63,46 +63,46 @@ All code will be developed only after the official hackathon start.
   - [x] Start “publish to Ollama” job:
     - [x] Popup for publish action
     - [x] Polling and monitoring of publish status
-- [ ] Optional extras:
-  - [ ] Store credentials / API keys via UI (encrypted)
-  - [ ] Basic benchmarking (latency / quality / cost metrics)
-  - [ ] Simple JSONL editor in browser
-- [ ] Deploy dashboard:
+- [x] Optional extras:
+  - [x] Store credentials / API keys via UI (encrypted)
+  - [x] Basic benchmarking (latency / quality / cost metrics)
+  - [x] Simple JSONL editor in browser
+- [x] Deploy dashboard:
   - [x] ~~GitHub Pages **or**~~
   - [x] ~~Vercel **or**~~
   - [x] Cloudflare Pages
-- [ ] Add README to `fine-tune-app-dashboard`
+- [] Add README to `fine-tune-app-dashboard`
 
 ---
 
 ### 3. API / Backend
 
 - [x] Prepare `Dockerfile` and `docker-compose.yaml`
-- [ ] Implement FastAPI application:
-  - [ ] Endpoints to support all dashboard flows:
+- [x] Implement FastAPI application:
+  - [x] Endpoints to support all dashboard flows:
     - [x] Auth integration with Google OAuth (token verification / session)
     - [x] CRUD for tasks
     - [x] File upload + storage
     - [x] Dataset preparation job trigger + status
     - [x] Fine-tuning job trigger + status
-    - [ ] Publish-to-Ollama job trigger + status
+    - [x] Publish-to-Ollama job trigger + status
 - [x] Confirm Gemini API credits from hackathon organisers
 - [x] Create dedicated GCP project for fine-tune.app
-- [ ] Deploy API:
+- [x] Deploy API:
   - [x] ~~GCP (Cloud Run / GCE / GKE) **or**~~
   - [x] Cloudflare Tunnel from local machine
 - [x] Create dedicated accounts:
   - [x] Hugging Face (project-specific)
   - [x] Ollama (project-specific / namespace)
 - [x] Prepare test datasets and run several small fine-tuning jobs end-to-end
-- [ ] Add README to `fine-tune-app-api`
+- [x] Add README to `fine-tune-app-api`
 
 ---
 
 ### 4. Demo & Submission
 
-- [] Draft bullet-point demo script (what to show in 3 minutes)
-- [ ] Record screen demo of the full flow:
+- [x] Draft bullet-point demo script (what to show in 3 minutes)
+- [x] Record screen demo of the full flow:
   - [x] Create task
   - [x] Upload data
   - [x] Prepare JSONL
@@ -156,7 +156,7 @@ All code will be developed only after the official hackathon start.
   - Backend jobs:
     - ~~Dataset preparation → JSONL~~
     - ~~Fine-tuning job wiring (stubbed then real)~~
-    - Basic status polling from UI
+    - ~~Basic status polling from UI~~
 
 - **14:30–15:15**
   - ~~Publish-to-Ollama flow (API + UI)~~
@@ -165,7 +165,7 @@ All code will be developed only after the official hackathon start.
 - **15:15–16:00**
   - ~~Stabilise demo path (happy path only)~~
   - Minimal benchmarking / stats if time allows
-  - Tighten copy on landing and dashboard
+  - ~~Tighten copy on landing and dashboard~~
 
 - **16:00–16:30**
   - Record demo video (screen + voice)

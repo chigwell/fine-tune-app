@@ -21,7 +21,7 @@ All code will be developed only after the official hackathon start.
 ## Planned repo structure
 
 - `fine-tune-app` — meta / planning (this repo)
-- `fine-tune-app-landing` — public landing page
+- [`fine-tune-app-landing`](https://github.com/chigwell/fine-tune-app-landing) — public landing page: https://fine-tune.app/
 - `fine-tune-app-dashboard` — web UI dashboard
 - `fine-tune-app-api` — backend + workers
 

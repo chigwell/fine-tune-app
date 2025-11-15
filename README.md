@@ -31,7 +31,7 @@ All code will be developed only after the official hackathon start.
 
 ### 1. Landing
 
-- [ ] Register domain for fine-tune.app (or suitable alternative)
+- [x] Register domain for fine-tune.app (or suitable alternative)
 - [ ] Implement one-page landing with a strong “wow” effect
 - [ ] Deploy landing:
   - [ ] GitHub Pages **or**

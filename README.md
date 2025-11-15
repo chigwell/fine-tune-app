@@ -1,6 +1,6 @@
 # fine-tune.app
 
-![status](https://img.shields.io/badge/status-work_in_progress-yellow)
+![status](https://img.shields.io/badge/status-almost_ready-green)
 ![hackathon](https://img.shields.io/badge/hackathon-Gemini%20Vibe%20Code%20London-blue)
 
 fine-tune.app is a fine-tuning platform for small LLMs (≈270M parameters), built from scratch during the  

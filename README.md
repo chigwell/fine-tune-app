@@ -32,11 +32,11 @@ All code will be developed only after the official hackathon start.
 ### 1. Landing
 
 - [x] Register domain for fine-tune.app (or suitable alternative)
-- [ ] Implement one-page landing with a strong “wow” effect
-- [ ] Deploy landing:
-  - [ ] GitHub Pages **or**
-  - [ ] Vercel **or**
-  - [ ] Cloudflare Pages
+- [x] Implement one-page landing with a strong “wow” effect
+- [x] Deploy landing:
+  - [ ] ~~GitHub Pages **or**~~
+  - [ ] ~~Vercel **or**~~
+  - [x] Cloudflare Pages
 - [ ] Add concise README to `fine-tune-app-landing`
 
 ---
@@ -44,11 +44,11 @@ All code will be developed only after the official hackathon start.
 ### 2. Dashboard UI
 
 - [ ] Implement frontend dashboard:
-  - [ ] Auth, login, and registration via Google OAuth
-  - [ ] Task listing (table / cards)
-  - [ ] “New task” flow:
-    - [ ] “+” button
-    - [ ] Popup/modal for creating draft fine-tuning task
+  - [x] Auth, login, and registration via Google OAuth
+  - [x] Task listing (table / cards)
+  - [x] “New task” flow:
+    - [x] “+” button
+    - [x] Popup/modal for creating draft fine-tuning task
   - [ ] File upload:
     - [ ] Drag-and-drop upload for user files
     - [ ] List of uploaded files
@@ -77,11 +77,11 @@ All code will be developed only after the official hackathon start.
 
 ### 3. API / Backend
 
-- [ ] Prepare `Dockerfile` and `docker-compose.yaml`
+- [x] Prepare `Dockerfile` and `docker-compose.yaml`
 - [ ] Implement FastAPI application:
   - [ ] Endpoints to support all dashboard flows:
-    - [ ] Auth integration with Google OAuth (token verification / session)
-    - [ ] CRUD for tasks
+    - [x] Auth integration with Google OAuth (token verification / session)
+    - [x] CRUD for tasks
     - [ ] File upload + storage
     - [ ] Dataset preparation job trigger + status
     - [ ] Fine-tuning job trigger + status
@@ -101,11 +101,11 @@ All code will be developed only after the official hackathon start.
 
 ### 4. Demo & Submission
 
-- [ ] Draft bullet-point demo script (what to show in 3 minutes)
+- [] Draft bullet-point demo script (what to show in 3 minutes)
 - [ ] Record screen demo of the full flow:
   - [ ] Create task
   - [ ] Upload data
-  - [ ] Prepare JSONL
+  - [x] Prepare JSONL
   - [ ] Run fine-tune
   - [ ] Publish to Ollama
   - [ ] Use the resulting model
@@ -135,20 +135,20 @@ All code will be developed only after the official hackathon start.
 - **10:15–11:00**
   - ~~Finalise idea and repo structure~~
   - Create GCP project, Hugging Face account, Ollama namespace
-  - Skeleton ~~`fine-tune-app-landing`~~, `fine-tune-app-dashboard`, `fine-tune-app-api`
+  - Skeleton ~~`fine-tune-app-landing`~~, ~~`fine-tune-app-dashboard`~~, ~~`fine-tune-app-api`~~
 
 - **11:00–12:00**
-  - Core API scaffolding (FastAPI + Docker)
-  - Define task, file, and job models
+  - ~~Core API scaffolding (FastAPI + Docker)~~
+  - ~~Define task, file, and job models~~
   - Basic endpoints for tasks and file upload
 
 - **12:00–12:30**
-  - Quick landing v1 with clear explanation + hackathon context
-  - Deploy first version of landing (GitHub Pages / Vercel / Cloudflare)
+  - ~~Quick landing v1 with clear explanation + hackathon context~~
+  - ~~Deploy first version of landing (GitHub Pages / Vercel / Cloudflare)~~
 
 - **12:30–13:30**
   - Dashboard:
-    - Google OAuth wiring
+    - ~~Google OAuth wiring~~
     - Task listing + “New task” popup
     - File upload + listing + delete
 

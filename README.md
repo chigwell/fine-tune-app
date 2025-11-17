@@ -23,7 +23,7 @@ All code will be developed only after the official hackathon start.
 - [`fine-tune-app`](https://github.com/chigwell/fine-tune-app) — meta / planning (this repo)
 - [`fine-tune-app-landing`](https://github.com/chigwell/fine-tune-app-landing) — public landing page: https://fine-tune.app/
 - [`fine-tune-app-dashboard`](https://github.com/chigwell/fine-tune-app-dashboard) — web UI dashboard: https://dash.fine-tune.app/
-- [`fine-tune-app-api`](https://github.com/chigwell/fine-tune-app-api) — backend + workers: https://api.fine-tune.app/
+- [`fine-tune-app-api`](https://github.com/chigwell/fine-tune-app-api) — backend + workers: https://api.fine-tune.app/ **After the hackathon, I changed the visibility of the back-end repository to private and turned off the server. If you have any questions, feel free to message me via LinkedIn ([eugene-evstafev](https://www.linkedin.com/in/eugene-evstafev/)) or email me at [hi@eugene.plus](mailto:hi@eugene.plus).**
 
 ---
 

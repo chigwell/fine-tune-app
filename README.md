@@ -1,180 +1,103 @@
-# fine-tune.app
+# [Horizon UI TailwindCSS React ⚡️](https://horizon-ui.com/horizon-tailwind-react) [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social&logo=twitter)](https://twitter.com/intent/tweet?text=Check%20Horizon%20UI,%20the%20trendiest%20open-source%20admin%20template%20for%20%23tailwindcss%20and%20%23react!%0A%0Ahorizon-ui.com%20)
 
-![status](https://img.shields.io/badge/status-almost_ready-green)
-![hackathon](https://img.shields.io/badge/hackathon-Gemini%20Vibe%20Code%20London-blue)
+![version](https://img.shields.io/badge/version-2.0.0-brightgreen.svg)
+![license](https://img.shields.io/badge/license-MIT-blue.svg)
+[![GitHub issues open](https://img.shields.io/github/issues/horizon-ui/horizon-tailwind-react.svg?maxAge=2592000)](https://github.com/horizon-ui/horizon-tailwind-react/issues?q=is%3Aopen+is%3Aissue)
 
-fine-tune.app is a fine-tuning platform for small LLMs (≈270M parameters), built from scratch during the  
-[Gemini Vibe Code Hackathon – London](https://cerebralvalley.ai/e/vibe-code-gemini-london).
+<p>&nbsp;</p>
 
-This repository is the meta / coordination repo for the project.  
-All code will be developed only after the official hackathon start.
+[<img alt="Horizon UI - Tailwind CSS React Admin dashboard template" src="https://i.ibb.co/1zhBQ2J/horizon-ui-tailwind-2.png" />](https://github.com/horizon-ui/horizon-tailwind-react)
 
----
+<p>&nbsp;</p>
 
-## Owner
-
-- GitHub: [github.com/chigwell](https://github.com/chigwell)  
-- LinkedIn: [Eugene Evstafev](https://www.linkedin.com/in/eugene-evstafev-716669181/)
+Get started and build your dream web app with Horizon UI, the trendiest & innovative Open Source Admin Template for Tailwind CSS & React!
 
 ---
 
-## Planned repo structure
+### Introduction
 
-- [`fine-tune-app`](https://github.com/chigwell/fine-tune-app) — meta / planning (this repo)
-- [`fine-tune-app-landing`](https://github.com/chigwell/fine-tune-app-landing) — public landing page: https://fine-tune.app/
-- [`fine-tune-app-dashboard`](https://github.com/chigwell/fine-tune-app-dashboard) — web UI dashboard: https://dash.fine-tune.app/
-- [`fine-tune-app-api`](https://github.com/chigwell/fine-tune-app-api) — backend + workers: https://api.fine-tune.app/ **After the hackathon, I changed the visibility of the back-end repository to private and turned off the server. If you have any questions, feel free to message me via LinkedIn ([eugene-evstafev](https://www.linkedin.com/in/eugene-evstafev/)) or email me at [hi@eugene.plus](mailto:hi@eugene.plus).**
+Designed for those who like modern UI elements and beautiful websites. Made of hundred of elements, designed blocks and fully coded pages, Horizon UI is ready to help you create stunning websites and webapps.
 
----
+Save hundreds of hours trying to create and develop a dashboard from scratch.
+The fastest, most responsive & trendiest dashboard for Tailwind CSS is here. Seriously.
 
-## Hackathon checklist
+With Horizon UI you will find many examples for pages like NFTs Pages,
+Authentication Pages, Profile and so on. Just choose between a Basic Design or a cover and you are good to go!
 
-### 1. Landing
+### 🎉 [NEW] Horizon UI Components
 
-- [x] Register domain for fine-tune.app (or suitable alternative)
-- [x] Implement one-page landing with a strong “wow” effect
-- [x] Deploy landing:
-  - [x] ~~GitHub Pages **or**~~
-  - [x] ~~Vercel **or**~~
-  - [x] Cloudflare Pages
-- [x] Add concise README to `fine-tune-app-landing`
+All the main components from both versions, this will help you to see and interact with all & the latest added components of Horizon (also, new components are on the way, stay tuned)! ⚡️
+<a href="https://horizon-ui.com/components/?ref=readme-horizon-tailwind-react" target="_blank">See all components</a>
 
----
+### Documentation
 
-### 2. Dashboard UI
+Each element is well presented in a very complex documentation. You can read more about the <a href="https://horizon-ui.com/docs-tailwind/docs/react/installation?ref=readme-horizon-tailwind-react" target="_blank">documentation here.</a>
 
-- [x] Implement frontend dashboard:
-  - [x] Auth, login, and registration via Google OAuth
-  - [x] Task listing (table / cards)
-  - [x] “New task” flow:
-    - [x] “+” button
-    - [x] Popup/modal for creating draft fine-tuning task
-  - [x] File upload:
-    - [x] Drag-and-drop upload for user files
-    - [x] List of uploaded files
-    - [x] Ability to delete files
-  - [x] Start dataset preparation job:
-    - [x] Trigger JSONL preparation job
-    - [x] Poll job status
-    - [x] Show progress/status in popup
-  - [x] Start fine-tuning job:
-    - [x] Popup for configuration (model, epochs, LR, etc.)
-    - [x] Polling and monitoring of training status
-  - [x] Start “publish to Ollama” job:
-    - [x] Popup for publish action
-    - [x] Polling and monitoring of publish status
-- [x] Optional extras:
-  - [x] Store credentials / API keys via UI (encrypted)
-  - [x] Basic benchmarking (latency / quality / cost metrics)
-  - [x] Simple JSONL editor in browser
-- [x] Deploy dashboard:
-  - [x] ~~GitHub Pages **or**~~
-  - [x] ~~Vercel **or**~~
-  - [x] Cloudflare Pages
-- [x] Add README to `fine-tune-app-dashboard`
+### Quick Start
 
----
+Install Horizon UI by running either of the following:
 
-### 3. API / Backend
+- Install NodeJS LTS from [NodeJs Official Page](https://nodejs.org/en/?ref=horizon-documentation) (NOTE: Product only works with LTS version).
 
-- [x] Prepare `Dockerfile` and `docker-compose.yaml`
-- [x] Implement FastAPI application:
-  - [x] Endpoints to support all dashboard flows:
-    - [x] Auth integration with Google OAuth (token verification / session)
-    - [x] CRUD for tasks
-    - [x] File upload + storage
-    - [x] Dataset preparation job trigger + status
-    - [x] Fine-tuning job trigger + status
-    - [x] Publish-to-Ollama job trigger + status
-- [x] Confirm Gemini API credits from hackathon organisers
-- [x] Create dedicated GCP project for fine-tune.app
-- [x] Deploy API:
-  - [x] ~~GCP (Cloud Run / GCE / GKE) **or**~~
-  - [x] Cloudflare Tunnel from local machine
-- [x] Create dedicated accounts:
-  - [x] Hugging Face (project-specific)
-  - [x] Ollama (project-specific / namespace)
-- [x] Prepare test datasets and run several small fine-tuning jobs end-to-end
-- [x] Add README to `fine-tune-app-api`
+Clone the repository with the following command:
+
+```bash
+git clone https://github.com/horizon-ui/horizon-tailwind-react.git
+```
+
+Run in terminal this command:
+
+```bash
+npm install
+```
+
+Then run this command to start your local server
+
+```bash
+npm start
+```
+
+### Example Pages
+
+If you want to get inspiration or just show something directly to your clients, you can jump start your development with our pre-built example pages. You will be able to quickly set up the basic structure for your web project.
+
+View <a href="https://horizon-ui.com/horizon-tailwind-react/?ref=readme-horizon-tailwind-react" target="_blank">example pages here.</a>
+
+### Versions
+
+| Free Version                                                                                                                                          | PRO Version                                                                                                                                                    |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [![Horizon UI Tailwind CSS React](https://i.ibb.co/1zhBQ2J/horizon-ui-tailwind-2.png)](https://www.horizon-ui.com/?ref=readme-horizon-tailwind-react) | [![Horizon UI Tailwind CSS React PRO](https://i.ibb.co/d0cVzKB/horizon-ui-pro-tailwind.png)](https://www.horizon-ui.com/pro?ref=readme-horizon-tailwind-react) |
+
+### Figma Version
+
+Horizon UI is available in Figma format as well! Check it out on Figma
+Community! 🎨
+[See the Horizon UI Figma design files](https://bit.ly/horizon-figma)
+
+### Reporting Issues
+
+We use GitHub Issues as the official bug tracker for the Horizon UI. Here are
+some advices for our users that want to report an issue:
+
+1. Make sure that you are using the latest version of the Horizon UI Dashbaord.
+   Check the CHANGELOG from your dashboard on our
+   [CHANGE LOG File](https://github.com/horizon-ui/horizon-tailwind-react/blob/main/CHANGELOG.md?ref=readme-horizon-tailwind-react).
+2. Providing us reproducible steps for the issue will shorten the time it takes
+   for it to be fixed.
+3. Some issues may be browser specific, so specifying in what browser you
+   encountered the issue might help.
 
 ---
 
-### 4. Demo & Submission
+### Community
 
-- [x] Draft bullet-point demo script (what to show in 3 minutes)
-- [x] Record screen demo of the full flow:
-  - [x] Create task
-  - [x] Upload data
-  - [x] Prepare JSONL
-  - [x] Run fine-tune
-  - [x] Publish to Ollama
-  - [x] Use the resulting model
-- [ ] ~~Record and add voice-over~~
-- [x] Upload demo video to YouTube (unlisted or public)
-- [x] Prepare text for submission form (problem statement fit, impact, tech stack)
-- [x] Submit project via official form:  
-      https://cerebralvalley.ai/e/vibe-code-gemini-london/hackathon/submit
-- [x] Prepare short live pitch script for on-stage / judge demo
+Connect with the community! Feel free to ask questions, report issues, and meet new people that already use Horizon UI!
 
----
+💬 [Join the #HorizonUI Discord Community!](https://discord.gg/f6tEKFBd4m)
 
-### 5. Win the hackathon 🎯
+### Copyright and license
 
-- [ ] Deliver a stable, working end-to-end demo
+⭐️ [Copyright 2023 Horizon UI ](https://www.horizon-ui.com/?ref=readme-horizon-tailwind-react)
 
----
-
-## 15 November 2025 – Working timeline
-
-**Hackathon schedule (London time)**  
-- ~~10:00 — Welcome kick-off~~
-- 17:00 — Submissions due (target: **submit by 16:50**) 
-
-**Internal plan (target start: 10:15, deadline: 16:50)**
-
-- **10:15–11:00**
-  - ~~Finalise idea and repo structure~~
-  - Create GCP project, ~~Hugging Face account~~, ~~Ollama namespace~~
-  - Skeleton ~~`fine-tune-app-landing`~~, ~~`fine-tune-app-dashboard`~~, ~~`fine-tune-app-api`~~
-
-- **11:00–12:00**
-  - ~~Core API scaffolding (FastAPI + Docker)~~
-  - ~~Define task, file, and job models~~
-  - ~~Basic endpoints for tasks and file upload~~
-
-- **12:00–12:30**
-  - ~~Quick landing v1 with clear explanation + hackathon context~~
-  - ~~Deploy first version of landing (GitHub Pages / Vercel / Cloudflare)~~
-
-- **12:30–13:30**
-  - Dashboard:
-    - ~~Google OAuth wiring~~
-    - ~~Task listing + “New task” popup~~
-    - ~~File upload + listing + delete~~
-
-- **13:30–14:30**
-  - Backend jobs:
-    - ~~Dataset preparation → JSONL~~
-    - ~~Fine-tuning job wiring (stubbed then real)~~
-    - ~~Basic status polling from UI~~
-
-- **14:30–15:15**
-  - ~~Publish-to-Ollama flow (API + UI)~~
-  - ~~Run at least one small real fine-tuning end-to-end~~
-
-- **15:15–16:00**
-  - ~~Stabilise demo path (happy path only)~~
-  - Minimal benchmarking / stats if time allows
-  - ~~Tighten copy on landing and dashboard~~
-
-- **16:00–16:30**
-  - ~~Record demo video (screen + voice)~~
-  - ~~Upload to YouTube~~
-  - ~~Write submission text (impact, tech, creativity)~~
-
-- **16:30–16:50**
-  - ~~Submit project via official form~~
-  - Final README and checklist updates
-  - Quick rehearsal for live demo
-
----
+📄 [Horizon UI License](https://www.simmmple.com/licenses?ref=readme-horizon-tailwind-react)

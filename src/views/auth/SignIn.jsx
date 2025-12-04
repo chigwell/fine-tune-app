@@ -112,8 +112,10 @@ export default function SignIn() {
   }, []);
 
   useEffect(() => {
-    if (!scriptReady || !GOOGLE_CLIENT_ID || !googleButtonRef.current) return;
-    if (!window.google) return;
+    const googleReady =
+      scriptReady && !!GOOGLE_CLIENT_ID && typeof window !== "undefined";
+    if (!googleReady || !googleButtonRef.current || !window.google?.accounts)
+      return;
 
     window.google.accounts.id.initialize({
       client_id: GOOGLE_CLIENT_ID,
@@ -149,22 +151,21 @@ export default function SignIn() {
           <div className="flex w-full items-center justify-center">
             <div
               ref={googleButtonRef}
-              className={`${
-                scriptReady && GOOGLE_CLIENT_ID
-                  ? "flex w-full justify-center"
-                  : "hidden"
-              }`}
+              className="flex w-full justify-center"
             />
           </div>
 
-          {!scriptReady && GOOGLE_CLIENT_ID && (
+          {(!scriptReady || !window.google?.accounts || !GOOGLE_CLIENT_ID) && (
             <button
               type="button"
-              className="linear flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-[12px] text-base font-medium text-gray-700 transition duration-200 dark:border-white/10 dark:bg-navy-800 dark:text-white"
-              disabled
+              onClick={() => window.google?.accounts?.id?.prompt?.()}
+              className="linear flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-[12px] text-base font-medium text-gray-700 transition duration-200 hover:bg-gray-50 disabled:cursor-not-allowed dark:border-white/10 dark:bg-navy-800 dark:text-white"
+              disabled={!scriptReady || !window.google?.accounts}
             >
               <FcGoogle className="text-xl" />
-              Loading Google Sign-In...
+              {scriptReady && window.google?.accounts
+                ? "Launch Google Sign-In"
+                : "Loading Google Sign-In..."}
             </button>
           )}
 

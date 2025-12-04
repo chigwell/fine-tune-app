@@ -2,6 +2,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import DashIcon from "components/icons/DashIcon";
+import { useAuth } from "context/AuthContext";
 // chakra imports
 
 export function SidebarLinks(props) {
@@ -9,6 +10,7 @@ export function SidebarLinks(props) {
   let location = useLocation();
 
   const { routes } = props;
+  const { status } = useAuth();
 
   // verifies if routeName is the one active (in browser input)
   const activeRoute = (routeName) => {
@@ -17,6 +19,9 @@ export function SidebarLinks(props) {
 
   const createLinks = (routes) => {
     return routes.map((route, index) => {
+      if (route.layout === "/auth" && route.path === "sign-in" && status === "authenticated") {
+        return null;
+      }
       if (
         route.layout === "/admin" ||
         route.layout === "/auth" ||

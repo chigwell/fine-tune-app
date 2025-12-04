@@ -88,6 +88,14 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const logout = useCallback(() => {
+    const currentEmail = getAuthEmail();
+    if (window.google?.accounts?.id) {
+      window.google.accounts.id.disableAutoSelect();
+      if (currentEmail) {
+        window.google.accounts.id.revoke(currentEmail, () => {});
+      }
+    }
+
     clearAuth();
     setEmail("");
     setStatus("unauthenticated");

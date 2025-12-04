@@ -9,6 +9,7 @@ import Billing from "views/admin/billing";
 
 // Auth Imports
 import SignIn from "views/auth/SignIn";
+import SignOut from "views/auth/SignOut";
 
 // Icon Imports
 import {
@@ -63,5 +64,13 @@ const routes = [
     icon: <MdLock className="h-6 w-6" />,
     component: <SignIn />,
   },
+  {
+    name: "Sign Out",
+    layout: "/auth",
+    path: "sign-out",
+    icon: <MdLock className="h-6 w-6" />,
+    component: <SignOut />,
+  },
 ];
+
 export default routes;

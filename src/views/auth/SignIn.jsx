@@ -148,10 +148,10 @@ export default function SignIn() {
         </p>
 
         <div className="flex flex-col gap-4">
-          <div className="flex w-full items-center justify-center">
+          <div className="flex w-full items-center justify-left">
             <div
               ref={googleButtonRef}
-              className="flex w-full justify-center"
+              className="flex w-full justify-left"
             />
           </div>
 

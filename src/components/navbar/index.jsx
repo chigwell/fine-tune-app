@@ -53,12 +53,12 @@ const Navbar = (props) => {
             <FiAlignJustify className="h-5 w-5" />
           </span>
           <div className="flex items-center">
-            <p className="text-xl font-bold text-navy-700 dark:text-white">$100.00</p>
+            <p style={{paddingLeft: "12px"}} className="text-xl font-bold text-navy-700 dark:text-white">$100.00</p>
           </div>
           {/* start Notification */}
           <Dropdown
             button={
-              <p className="cursor-pointer">
+              <p style={{paddingLeft: "8px"}} className="cursor-pointer">
                 <IoMdNotificationsOutline className="h-4 w-4 text-gray-600 dark:text-white" />
               </p>
             }
@@ -107,6 +107,7 @@ const Navbar = (props) => {
           />
           
           <div
+            style={{paddingLeft: "8px", paddingRight: "8px"}}
             className="cursor-pointer text-gray-600"
             onClick={() => {
               if (darkmode) {

@@ -11,10 +11,12 @@ import {
   IoMdInformationCircleOutline,
 } from "react-icons/io";
 import avatar from "assets/img/avatars/avatar4.png";
+import { useAuth } from "context/AuthContext";
 
 const Navbar = (props) => {
   const { onOpenSidenav, brandText } = props;
   const [darkmode, setDarkmode] = React.useState(false);
+  const { email, logout } = useAuth();
 
   return (
     <nav className="sticky top-4 z-40 flex flex-row flex-wrap items-center justify-between rounded-xl bg-white/10 p-2 backdrop-blur-xl dark:bg-[#0b14374d]">
@@ -177,25 +179,25 @@ const Navbar = (props) => {
         </div>
         {/* Profile & Dropdown */}
         <Dropdown
-          button={
-            <img
-              className="h-10 w-10 rounded-full"
-              src={avatar}
-              alt="Elon Musk"
-            />
-          }
-          children={
-            <div className="flex w-56 flex-col justify-start rounded-[20px] bg-white bg-cover bg-no-repeat shadow-xl shadow-shadow-500 dark:!bg-navy-700 dark:text-white dark:shadow-none">
-              <div className="p-4">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-bold text-navy-700 dark:text-white">
-                    👋 Hey, Adela
-                  </p>{" "}
+            button={
+              <img
+                className="h-10 w-10 rounded-full"
+                src={avatar}
+                alt="Profile avatar"
+              />
+            }
+            children={
+              <div className="flex w-56 flex-col justify-start rounded-[20px] bg-white bg-cover bg-no-repeat shadow-xl shadow-shadow-500 dark:!bg-navy-700 dark:text-white dark:shadow-none">
+                <div className="p-4">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-bold text-navy-700 dark:text-white">
+                      👋 Hey{email ? "," : ""} {email || "there"}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="h-px w-full bg-gray-200 dark:bg-white/20 " />
+                <div className="h-px w-full bg-gray-200 dark:bg-white/20 " />
 
-              <div className="flex flex-col p-4">
+                <div className="flex flex-col p-4">
                 <a
                   href=" "
                   className="text-sm text-gray-800 dark:text-white hover:dark:text-white"
@@ -208,12 +210,12 @@ const Navbar = (props) => {
                 >
                   Newsletter Settings
                 </a>
-                <a
-                  href=" "
-                  className="mt-3 text-sm font-medium text-red-500 hover:text-red-500 transition duration-150 ease-out hover:ease-in"
+                <button
+                  onClick={logout}
+                  className="mt-3 text-left text-sm font-medium text-red-500 transition duration-150 ease-out hover:text-red-500 hover:ease-in"
                 >
                   Log Out
-                </a>
+                </button>
               </div>
             </div>
           }

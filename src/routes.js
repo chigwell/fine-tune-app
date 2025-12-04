@@ -13,7 +13,6 @@ import SignIn from "views/auth/SignIn";
 // Icon Imports
 import {
   MdHome,
-  MdBarChart,
   MdPerson,
   MdLock,
   MdOutlineVpnKey,

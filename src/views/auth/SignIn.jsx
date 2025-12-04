@@ -1,78 +1,191 @@
-import InputField from "components/fields/InputField";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { FcGoogle } from "react-icons/fc";
-import Checkbox from "components/checkbox";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "context/AuthContext";
+
+const API_BASE_URL =
+  process.env.REACT_APP_API_BASE_URL || "http://localhost:8000";
+const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
 export default function SignIn() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { status: authStatus, login } = useAuth();
+  const fromPath = useMemo(
+    () =>
+      typeof location.state?.from === "string" ? location.state.from : "/admin",
+    [location.state]
+  );
+  const googleButtonRef = useRef(null);
+  const [scriptReady, setScriptReady] = useState(
+    typeof window !== "undefined" && !!window.google
+  );
+  const [error, setError] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
+
+  useEffect(() => {
+    if (authStatus === "authenticated") {
+      navigate(fromPath, { replace: true });
+    }
+  }, [authStatus, fromPath, navigate]);
+
+  const handleCredentialResponse = useCallback(
+    async (response) => {
+      const credential = response?.credential;
+      if (!credential) {
+        setError("Unable to retrieve Google credential. Please try again.");
+        return;
+      }
+
+      setStatusMessage("Verifying your account...");
+      setError("");
+
+      try {
+        const verifyResponse = await fetch(`${API_BASE_URL}/verify`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: credential }),
+        });
+
+        const data = await verifyResponse.json().catch(() => null);
+
+        if (!verifyResponse.ok) {
+          throw new Error(data?.reason || "Verification failed");
+        }
+
+        if (!data?.valid) {
+          throw new Error(data?.reason || "Invalid token");
+        }
+
+        if (!data?.email) {
+          throw new Error("No email returned from verification.");
+        }
+
+        login(data.email, credential);
+        navigate(fromPath, { replace: true });
+      } catch (err) {
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Unable to sign in right now. Please try again.";
+        setError(message);
+      } finally {
+        setStatusMessage("");
+      }
+    },
+    [fromPath, navigate, login]
+  );
+
+  useEffect(() => {
+    const scriptId = "google-identity-client";
+    const handleScriptLoad = () => setScriptReady(true);
+
+    if (window.google) {
+      setScriptReady(true);
+      return undefined;
+    }
+
+    const existing = document.getElementById(scriptId);
+    if (existing) {
+      existing.addEventListener("load", handleScriptLoad);
+      return () => existing.removeEventListener("load", handleScriptLoad);
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.id = scriptId;
+    script.onload = handleScriptLoad;
+    document.head.appendChild(script);
+
+    return () => {
+      script.onload = null;
+      script.removeEventListener("load", handleScriptLoad);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!scriptReady || !GOOGLE_CLIENT_ID || !googleButtonRef.current) return;
+    if (!window.google) return;
+
+    window.google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: handleCredentialResponse,
+      ux_mode: "popup",
+    });
+
+    googleButtonRef.current.innerHTML = "";
+    window.google.accounts.id.renderButton(googleButtonRef.current, {
+      theme: "outline",
+      size: "large",
+      width: 360,
+      shape: "pill",
+      type: "standard",
+      text: "continue_with",
+    });
+    window.google.accounts.id.prompt();
+  }, [handleCredentialResponse, scriptReady]);
+
+  const showConfigurationError = !GOOGLE_CLIENT_ID;
+
   return (
     <div className="mt-16 mb-16 flex h-full w-full items-center justify-center px-2 md:mx-0 md:px-0 lg:mb-10 lg:items-center lg:justify-start">
-      {/* Sign in section */}
       <div className="mt-[10vh] w-full max-w-full flex-col items-center md:pl-4 lg:pl-0 xl:max-w-[420px]">
         <h4 className="mb-2.5 text-4xl font-bold text-navy-700 dark:text-white">
           Sign In
         </h4>
         <p className="mb-9 ml-1 text-base text-gray-600">
-          Enter your email and password to sign in!
+          Use Google to access your Fine-tune account.
         </p>
-        <div className="mb-6 flex h-[50px] w-full items-center justify-center gap-2 rounded-xl bg-lightPrimary hover:cursor-pointer dark:bg-navy-800">
-          <div className="rounded-full text-xl">
-            <FcGoogle />
-          </div>
-          <h5 className="text-sm font-medium text-navy-700 dark:text-white">
-            Sign In with Google
-          </h5>
-        </div>
-        <div className="mb-6 flex items-center  gap-3">
-          <div className="h-px w-full bg-gray-200 dark:bg-navy-700" />
-          <p className="text-base text-gray-600 dark:text-white"> or </p>
-          <div className="h-px w-full bg-gray-200 dark:bg-navy-700" />
-        </div>
-        {/* Email */}
-        <InputField
-          variant="auth"
-          extra="mb-3"
-          label="Email*"
-          placeholder="mail@simmmple.com"
-          id="email"
-          type="text"
-        />
 
-        {/* Password */}
-        <InputField
-          variant="auth"
-          extra="mb-3"
-          label="Password*"
-          placeholder="Min. 8 characters"
-          id="password"
-          type="password"
-        />
-        {/* Checkbox */}
-        <div className="mb-4 flex items-center justify-between px-2">
-          <div className="flex items-center">
-            <Checkbox />
-            <p className="ml-2 text-sm font-medium text-navy-700 dark:text-white">
-              Keep me logged In
-            </p>
+        <div className="flex flex-col gap-4">
+          <div className="flex w-full items-center justify-center">
+            <div
+              ref={googleButtonRef}
+              className={`${
+                scriptReady && GOOGLE_CLIENT_ID
+                  ? "flex w-full justify-center"
+                  : "hidden"
+              }`}
+            />
           </div>
-          <a
-            className="text-sm font-medium text-brand-500 hover:text-brand-600 dark:text-white"
-            href=" "
-          >
-            Forgot Password?
-          </a>
-        </div>
-        <button className="linear mt-2 w-full rounded-xl bg-brand-500 py-[12px] text-base font-medium text-white transition duration-200 hover:bg-brand-600 active:bg-brand-700 dark:bg-brand-400 dark:text-white dark:hover:bg-brand-300 dark:active:bg-brand-200">
-          Sign In
-        </button>
-        <div className="mt-4">
-          <span className=" text-sm font-medium text-navy-700 dark:text-gray-600">
-            Not registered yet?
-          </span>
-          <a
-            href=" "
-            className="ml-1 text-sm font-medium text-brand-500 hover:text-brand-600 dark:text-white"
-          >
-            Create an account
-          </a>
+
+          {!scriptReady && GOOGLE_CLIENT_ID && (
+            <button
+              type="button"
+              className="linear flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-[12px] text-base font-medium text-gray-700 transition duration-200 dark:border-white/10 dark:bg-navy-800 dark:text-white"
+              disabled
+            >
+              <FcGoogle className="text-xl" />
+              Loading Google Sign-In...
+            </button>
+          )}
+
+          {showConfigurationError && (
+            <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-600 dark:border-red-400/40 dark:bg-red-900/30 dark:text-red-200">
+              Google OAuth is not configured. Set REACT_APP_GOOGLE_CLIENT_ID to
+              enable sign-in.
+            </div>
+          )}
+
+          {statusMessage && (
+            <div className="rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm font-medium text-blue-700 dark:border-blue-400/40 dark:bg-blue-900/40 dark:text-blue-100">
+              {statusMessage}
+            </div>
+          )}
+
+          {error && (
+            <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-600 dark:border-red-400/40 dark:bg-red-900/30 dark:text-red-200">
+              {error}
+            </div>
+          )}
         </div>
       </div>
     </div>

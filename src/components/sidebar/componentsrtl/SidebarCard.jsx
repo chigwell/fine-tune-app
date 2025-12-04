@@ -1,5 +1,4 @@
 import React from "react";
-import { BsArrowBarUp } from "react-icons/bs";
 
 const SidebarCard = () => {
   return (

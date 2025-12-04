@@ -6,10 +6,12 @@ import { BsArrowBarUp } from "react-icons/bs";
 import { RiMoonFill, RiSunFill } from "react-icons/ri";
 import { IoMdNotificationsOutline } from "react-icons/io";
 import avatar from "assets/img/avatars/avatar4.png";
+import { useAuth } from "context/AuthContext";
 
 const Navbar = (props) => {
   const { onOpenSidenav, brandText } = props;
   const [darkmode, setDarkmode] = React.useState(false);
+  const { email, logout } = useAuth();
 
   return (
     <nav className="sticky top-4 z-40 flex flex-row flex-wrap items-center justify-between rounded-xl bg-white/10 p-2 backdrop-blur-xl dark:bg-[#0b14374d]">
@@ -128,7 +130,7 @@ const Navbar = (props) => {
               <img
                 className="h-10 w-10 rounded-full"
                 src={avatar}
-                alt="Elon Musk"
+                alt="Profile avatar"
               />
             }
             children={
@@ -136,19 +138,19 @@ const Navbar = (props) => {
                 <div className="p-4">
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-bold text-navy-700 dark:text-white">
-                      👋 Hey, Adela
-                    </p>{" "}
+                      👋 Hey{email ? "," : ""} {email || "there"}
+                    </p>
                   </div>
                 </div>
                 <div className="h-px w-full bg-gray-200 dark:bg-white/20 " />
 
                 <div className="flex flex-col p-4">
-                  <a
-                    href="/auth/sign-in"
-                    className="mt-3 text-sm font-medium text-red-500 hover:text-red-500 transition duration-150 ease-out hover:ease-in"
+                  <button
+                    onClick={logout}
+                    className="mt-3 text-left text-sm font-medium text-red-500 transition duration-150 ease-out hover:text-red-500 hover:ease-in"
                   >
                     Sign Out
-                  </a>
+                  </button>
                 </div>
               </div>
             }

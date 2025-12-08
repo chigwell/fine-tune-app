@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Card from "components/card";
 import { MdOutlineVpnKey, MdRefresh, MdDelete } from "react-icons/md";
 import { getAuthToken } from "utils/auth";
@@ -21,10 +21,13 @@ const copyToClipboard = (value) => {
     !navigator.clipboard ||
     !navigator.clipboard.writeText
   ) {
-    return;
+    return false;
   }
 
-  navigator.clipboard.writeText(value).catch(() => {});
+  return navigator.clipboard
+    .writeText(value)
+    .then(() => true)
+    .catch(() => false);
 };
 
 const ApiKeys = () => {
@@ -33,9 +36,12 @@ const ApiKeys = () => {
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [copiedKey, setCopiedKey] = useState(null);
+  const [confirmTarget, setConfirmTarget] = useState(null);
   const [error, setError] = useState("");
   const [reachedEnd, setReachedEnd] = useState(false);
   const [lastCreated, setLastCreated] = useState(null);
+  const copyTimeoutRef = useRef(null);
 
   const offset = useMemo(() => page * PAGE_SIZE, [page]);
 
@@ -97,6 +103,14 @@ const ApiKeys = () => {
     fetchTokens(page);
   }, [page, fetchTokens]);
 
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const handleCreate = useCallback(async () => {
     const authToken = getAuthToken();
     if (!authToken || creating) return;
@@ -142,15 +156,24 @@ const ApiKeys = () => {
     }
   }, [creating, fetchTokens, page]);
 
+  const handleCopy = useCallback(
+    async (tokenIdentifier, tokenValue) => {
+      const success = await copyToClipboard(tokenValue);
+      if (!success) return;
+
+      setCopiedKey(tokenIdentifier);
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+      copyTimeoutRef.current = setTimeout(() => setCopiedKey(null), 2000);
+    },
+    []
+  );
+
   const handleDelete = useCallback(
     async (tokenId) => {
       const authToken = getAuthToken();
       if (!authToken || deletingId) return;
-
-      const confirmDelete = window.confirm(
-        "This API key will be revoked. Continue?"
-      );
-      if (!confirmDelete) return;
 
       setDeletingId(tokenId);
       setError("");
@@ -250,7 +273,6 @@ const ApiKeys = () => {
                 <tr className="border-b border-gray-100 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:border-white/10">
                   <th className="py-3 pr-4">Token</th>
                   <th className="py-3 pr-4">Created</th>
-                  <th className="py-3 pr-4">Valid Until</th>
                   <th className="py-3 pr-4">Status</th>
                   <th className="py-3 pr-4 text-right">Actions</th>
                 </tr>
@@ -304,9 +326,6 @@ const ApiKeys = () => {
                         <td className="py-3 pr-4 text-sm text-gray-700 dark:text-gray-200">
                           {formatDate(token.created_at)}
                         </td>
-                        <td className="py-3 pr-4 text-sm text-gray-700 dark:text-gray-200">
-                          {token.valid_until ? formatDate(token.valid_until) : "No expiry"}
-                        </td>
                         <td className="py-3 pr-4 text-sm">
                           <span
                             className={`rounded-full px-3 py-1 text-xs font-semibold ${
@@ -321,14 +340,23 @@ const ApiKeys = () => {
                         <td className="py-3 pr-0 text-right text-sm">
                           <button
                             type="button"
-                            onClick={() => copyToClipboard(tokenValue)}
+                            onClick={() =>
+                              handleCopy(tokenId || tokenValue, tokenValue)
+                            }
                             className="linear mr-2 rounded-lg px-3 py-2 text-xs font-semibold text-brand-600 transition duration-200 hover:bg-brand-50 dark:text-brand-200 dark:hover:bg-white/10"
                           >
-                            Copy
+                            {copiedKey === (tokenId || tokenValue)
+                              ? "Copied!"
+                              : "Copy"}
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleDelete(tokenId)}
+                            onClick={() =>
+                              setConfirmTarget({
+                                id: tokenId,
+                                label: tokenValue,
+                              })
+                            }
                             disabled={deletingId === tokenId}
                             className="linear inline-flex items-center gap-1 rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-600 transition duration-200 hover:bg-red-100 disabled:cursor-not-allowed dark:bg-red-900/30 dark:text-red-200 dark:hover:bg-red-900/50"
                           >
@@ -371,6 +399,50 @@ const ApiKeys = () => {
           </div>
         </Card>
       </div>
+
+      {confirmTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-3xl dark:bg-navy-800">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-200">
+                <MdDelete className="text-xl" />
+              </div>
+              <div className="flex-1">
+                <p className="text-lg font-semibold text-navy-700 dark:text-white">
+                  Revoke API key?
+                </p>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                  This action cannot be undone. Key:
+                  <span className="ml-1 font-mono break-all text-xs text-navy-700 dark:text-white">
+                    {confirmTarget.label}
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setConfirmTarget(null)}
+                className="linear rounded-lg border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition duration-200 hover:bg-gray-50 dark:border-white/10 dark:text-white dark:hover:bg-white/10"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  handleDelete(confirmTarget.id);
+                  setConfirmTarget(null);
+                }}
+                disabled={deletingId === confirmTarget.id}
+                className="linear rounded-lg bg-red-500 px-4 py-2 text-sm font-semibold text-white transition duration-200 hover:bg-red-600 disabled:cursor-not-allowed dark:bg-red-600 dark:hover:bg-red-500"
+              >
+                {deletingId === confirmTarget.id ? "Revoking..." : "Yes, revoke"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

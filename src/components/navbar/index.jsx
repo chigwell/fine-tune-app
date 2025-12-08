@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Dropdown from "components/dropdown";
 import { FiAlignJustify } from "react-icons/fi";
 import { Link } from "react-router-dom";
@@ -7,11 +7,53 @@ import { RiMoonFill, RiSunFill } from "react-icons/ri";
 import { IoMdNotificationsOutline } from "react-icons/io";
 import avatar from "assets/img/avatars/avatar4.png";
 import { useAuth } from "context/AuthContext";
+import { getAuthToken } from "utils/auth";
+
+const API_BASE_URL =
+  process.env.REACT_APP_API_BASE_URL || "http://localhost:8000";
 
 const Navbar = (props) => {
   const { onOpenSidenav, brandText } = props;
   const [darkmode, setDarkmode] = React.useState(false);
   const { email, logout } = useAuth();
+  const [balance, setBalance] = useState(null);
+  const [balanceStatus, setBalanceStatus] = useState("idle"); // idle | loading | error
+
+  const fetchBalance = useCallback(async () => {
+    const token = getAuthToken();
+    if (!token) {
+      setBalance(null);
+      setBalanceStatus("idle");
+      return;
+    }
+
+    setBalanceStatus("loading");
+    try {
+      const res = await fetch(`${API_BASE_URL}/balance`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || typeof data?.balance_dollars !== "number") {
+        throw new Error("Unable to load balance");
+      }
+      setBalance(data.balance_dollars);
+      setBalanceStatus("idle");
+    } catch (err) {
+      setBalance(null);
+      setBalanceStatus("error");
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBalance();
+  }, [fetchBalance, email]);
+
+  const balanceLabel = (() => {
+    if (balanceStatus === "loading") return "Loading...";
+    if (balanceStatus === "error") return "Balance unavailable";
+    if (typeof balance === "number") return `$${balance.toFixed(2)}`;
+    return "$0.00";
+  })();
 
   return (
     <nav className="sticky top-4 z-40 flex flex-row flex-wrap items-center justify-between rounded-xl bg-white/10 p-2 backdrop-blur-xl dark:bg-[#0b14374d]">
@@ -53,7 +95,13 @@ const Navbar = (props) => {
             <FiAlignJustify className="h-5 w-5" />
           </span>
           <div className="flex items-center">
-            <p style={{paddingLeft: "12px"}} className="text-xl font-bold text-navy-700 dark:text-white">$100.00</p>
+            <p
+              style={{ paddingLeft: "12px" }}
+              className="text-xl font-bold text-navy-700 dark:text-white"
+              title="Current balance"
+            >
+              {balanceLabel}
+            </p>
           </div>
           {/* start Notification */}
           <Dropdown

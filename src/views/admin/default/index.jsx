@@ -240,37 +240,41 @@ const TaskDashboard = () => {
   }, []);
 
   const buildDatasetFromFiles = useCallback(
-    async ({ trainIds, valIds, benchIds }) => {
-      // Best-effort helper: attempts to call a dataset config creation endpoint if available.
+    async ({ fileMappings, sourceType }) => {
+      // Call dataset-configs endpoint to build a dataset configuration from provided files.
       const token = getAuthToken();
       if (!token) {
         throw new Error("You need to sign in to build datasets.");
       }
 
+      const mapped = fileMappings
+        .map((entry, idx) => {
+          const idNumber = Number(entry.file_id);
+          if (!Number.isFinite(idNumber)) return null;
+          return {
+            file_id: idNumber,
+            split_role: entry.split_role,
+            position:
+              entry.position === 0 || Number.isFinite(entry.position)
+                ? Number(entry.position)
+                : idx,
+          };
+        })
+        .filter(Boolean);
+
+      if (!mapped.length) {
+        throw new Error("No file ids available to build dataset config.");
+      }
+
+      const resolvedSource = sourceType || "explicit_files";
       const payload = {
         name: projectName || "Fine-tune dataset",
         description: "Generated from UI",
-        source_type: "upload",
+        source_type: resolvedSource,
         split_train_pct: splitTrain,
         split_validation_pct: splitVal,
         split_benchmark_pct: splitBench,
-        files: [
-          ...trainIds.map((id, idx) => ({
-            file_id: id,
-            split_role: "train",
-            position: idx,
-          })),
-          ...valIds.map((id, idx) => ({
-            file_id: id,
-            split_role: "validation",
-            position: idx,
-          })),
-          ...benchIds.map((id, idx) => ({
-            file_id: id,
-            split_role: "benchmark",
-            position: idx,
-          })),
-        ],
+        files: mapped,
       };
 
       const res = await fetch(`${API_BASE_URL}/dataset-configs`, {
@@ -290,7 +294,7 @@ const TaskDashboard = () => {
           "Unable to create dataset config.";
         throw new Error(reason);
       }
-      const newId = data?.id || data?.dataset_config_id || data?.data?.id;
+      const newId = data?.dataset_config_id || data?.id || data?.data?.id;
       if (!newId) {
         throw new Error("Dataset config created but no id returned.");
       }
@@ -321,6 +325,10 @@ const TaskDashboard = () => {
           }
           const uploaded = await uploadFile(file, role);
           const newId = uploaded?.id || uploaded?.file_id;
+          if (!newId) {
+            setCreateError("Upload failed: missing file id.");
+            continue;
+          }
           const displayName =
             uploaded?.original_name || file.name || uploaded?.storage_key || `file-${newId}`;
           const entry = { id: newId, name: displayName };
@@ -473,11 +481,27 @@ const TaskDashboard = () => {
         if (!trainFiles.length || !valFiles.length || !benchFiles.length) {
           throw new Error("Upload at least one train, validation, and benchmark file.");
         }
-        targetDatasetConfigId = await buildDatasetFromFiles({
-          trainIds: trainFiles.map((f) => Number(f.id)),
-          valIds: valFiles.map((f) => Number(f.id)),
-          benchIds: benchFiles.map((f) => Number(f.id)),
+        const newId = await buildDatasetFromFiles({
+          sourceType: "explicit_files",
+          fileMappings: [
+            ...trainFiles.map((f, idx) => ({
+              file_id: Number(f.id),
+              split_role: "train",
+              position: idx,
+            })),
+            ...valFiles.map((f, idx) => ({
+              file_id: Number(f.id),
+              split_role: "validation",
+              position: idx,
+            })),
+            ...benchFiles.map((f, idx) => ({
+              file_id: Number(f.id),
+              split_role: "benchmark",
+              position: idx,
+            })),
+          ],
         });
+        targetDatasetConfigId = newId;
       }
 
       if (datasetSource === "auto_split") {
@@ -485,10 +509,19 @@ const TaskDashboard = () => {
           throw new Error("Upload a dataset file to auto-split.");
         }
         const uploaded = await uploadFile(singleFile, "train");
+        const uploadedId = uploaded?.id || uploaded?.file_id;
+        if (!uploadedId) {
+          throw new Error("Upload failed: missing file id.");
+        }
         const newId = await buildDatasetFromFiles({
-          trainIds: [uploaded.id || uploaded.file_id],
-          valIds: [uploaded.id || uploaded.file_id],
-          benchIds: [uploaded.id || uploaded.file_id],
+          sourceType: "single_split",
+          fileMappings: [
+            {
+              file_id: Number(uploadedId),
+              split_role: "raw",
+              position: 0,
+            },
+          ],
         });
         targetDatasetConfigId = newId;
       }
@@ -642,7 +675,7 @@ const TaskDashboard = () => {
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-        <div className="w-full max-w-4xl rounded-2xl bg-white p-6 shadow-3xl dark:bg-navy-800">
+        <div className="w-full max-w-4xl max-h-[85vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-3xl dark:bg-navy-800">
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-200">
               <MdOutlineReceipt className="text-xl" />
@@ -877,33 +910,38 @@ const TaskDashboard = () => {
             </div>
             {showAdvanced && (
               <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
-                {Object.entries(hyperparams).map(([key, value]) => (
-                  <label
-                    key={key}
-                    className="flex flex-col gap-1 text-sm font-semibold text-gray-700 dark:text-white"
-                  >
-                    {key.replace(/_/g, " ")}
-                    <input
-                      type={typeof value === "boolean" ? "checkbox" : "number"}
-                      checked={typeof value === "boolean" ? value : undefined}
-                      value={typeof value === "boolean" ? undefined : value}
-                      onChange={(e) =>
-                        setHyperparams((prev) => ({
-                          ...prev,
-                          [key]:
-                            typeof value === "boolean"
+                {Object.entries(hyperparams).map(([key, value]) => {
+                  const isBool = typeof value === "boolean";
+                  const isString = typeof value === "string";
+                  return (
+                    <label
+                      key={key}
+                      className="flex flex-col gap-1 text-sm font-semibold text-gray-700 dark:text-white"
+                    >
+                      {key.replace(/_/g, " ")}
+                      <input
+                        type={isBool ? "checkbox" : isString ? "text" : "number"}
+                        checked={isBool ? value : undefined}
+                        value={isBool ? undefined : value}
+                        onChange={(e) =>
+                          setHyperparams((prev) => ({
+                            ...prev,
+                            [key]: isBool
                               ? e.target.checked
-                              : Number(e.target.value),
-                        }))
-                      }
-                      className={`${
-                        typeof value === "boolean"
-                          ? "h-4 w-4"
-                          : "w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-brand-500 dark:border-white/10 dark:bg-navy-700 dark:text-white"
-                      }`}
-                    />
-                  </label>
-                ))}
+                              : isString
+                                ? e.target.value
+                                : Number(e.target.value),
+                          }))
+                        }
+                        className={`${
+                          isBool
+                            ? "h-4 w-4"
+                            : "w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-brand-500 dark:border-white/10 dark:bg-navy-700 dark:text-white"
+                        }`}
+                      />
+                    </label>
+                  );
+                })}
               </div>
             )}
           </div>

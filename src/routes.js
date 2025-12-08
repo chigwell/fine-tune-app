@@ -2,7 +2,6 @@ import React from "react";
 
 // Admin Imports
 import MainDashboard from "views/admin/default";
-import Profile from "views/admin/profile";
 import ApiKeys from "views/admin/apiKeys";
 import Files from "views/admin/files";
 import Billing from "views/admin/billing";
@@ -14,7 +13,6 @@ import SignOut from "views/auth/SignOut";
 // Icon Imports
 import {
   MdHome,
-  MdPerson,
   MdLock,
   MdOutlineVpnKey,
   MdOutlineFolder,
@@ -28,13 +26,6 @@ const routes = [
     path: "default",
     icon: <MdHome className="h-6 w-6" />,
     component: <MainDashboard />,
-  },
-  {
-    name: "Profile",
-    layout: "/admin",
-    path: "profile",
-    icon: <MdPerson className="h-6 w-6" />,
-    component: <Profile />,
   },
   {
     name: "API Keys",

@@ -17,6 +17,7 @@ const API_BASE_URL =
   process.env.REACT_APP_API_BASE_URL || "http://localhost:8000";
 const PAGE_SIZE = 10;
 const LOGS_PAGE_SIZE = 20;
+const DEFAULT_COST_PER_EPOCH = 1;
 
 const formatDate = (value) => {
   if (!value) return "—";
@@ -25,6 +26,15 @@ const formatDate = (value) => {
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleString();
 };
+
+const costPerEpochForModel = (modelId, modelName) => {
+  const id = Number(modelId);
+  if (id === 1) return 1; // gemma-3-270m
+  if ((modelName || "").toLowerCase().includes("gemma-3-270m")) return 1;
+  return DEFAULT_COST_PER_EPOCH;
+};
+
+const formatDollars = (value) => `$${(Number(value) || 0).toFixed(2)}`;
 
 const statusBadgeClass = (status) => {
   switch ((status || "").toLowerCase()) {
@@ -64,6 +74,8 @@ const TaskDashboard = () => {
   const [startLoading, setStartLoading] = useState({});
   const [reachedEnd, setReachedEnd] = useState(false);
   const [error, setError] = useState("");
+  const [balance, setBalance] = useState(null);
+  const [balanceStatus, setBalanceStatus] = useState("idle"); // idle | loading | error
 
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -146,6 +158,41 @@ const TaskDashboard = () => {
   useEffect(() => {
     fetchTasks(page);
   }, [page, fetchTasks]);
+
+  const fetchBalance = useCallback(async () => {
+    const token = getAuthToken();
+    if (!token) {
+      setBalance(null);
+      setBalanceStatus("idle");
+      return;
+    }
+    setBalanceStatus("loading");
+    try {
+      const res = await fetch(`${API_BASE_URL}/balance`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || typeof data?.balance_dollars !== "number") {
+        throw new Error("Unable to load balance");
+      }
+      setBalance(data.balance_dollars);
+      setBalanceStatus("idle");
+    } catch (err) {
+      setBalance(null);
+      setBalanceStatus("error");
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBalance();
+  }, [fetchBalance]);
+
+  const balanceLabel = useMemo(() => {
+    if (balanceStatus === "loading") return "Loading...";
+    if (balanceStatus === "error") return "Unavailable";
+    if (typeof balance === "number") return formatDollars(balance);
+    return "Unknown";
+  }, [balance, balanceStatus]);
 
   const refreshBaseModels = useCallback(async () => {
     const token = getAuthToken();
@@ -243,9 +290,39 @@ const TaskDashboard = () => {
     [fetchTasks, page]
   );
 
+  const expectedCostForTask = useCallback(
+    (taskEntry) => {
+      if (!taskEntry) return 0;
+      const task = taskEntry.task || taskEntry || {};
+      const base = taskEntry.base_model || {};
+      const epochs = Number(task.epochs) || 0;
+      const cpe = costPerEpochForModel(
+        task.base_model_id || base.id,
+        base.model_name || base.display_name
+      );
+      return epochs * cpe;
+    },
+    []
+  );
+
   const startWithLoader = useCallback(
     async (taskId) => {
       if (startLoading[taskId]) return;
+      const taskEntry = tasks.find((entry) => {
+        const t = entry.task || entry || {};
+        return (t.id || t.task_id) === taskId;
+      });
+      const expectedCost = expectedCostForTask(taskEntry);
+      const insufficient =
+        typeof balance === "number" && expectedCost > balance;
+      if (insufficient) {
+        setError(
+          `Insufficient balance (${formatDollars(
+            balance
+          )}) for expected cost ${formatDollars(expectedCost)}.`
+        );
+        return;
+      }
       setStartLoadingFlag(taskId, true);
       try {
         await performAction(taskId, "start");
@@ -253,7 +330,7 @@ const TaskDashboard = () => {
         setStartLoadingFlag(taskId, false);
       }
     },
-    [performAction, setStartLoadingFlag, startLoading]
+    [balance, expectedCostForTask, performAction, setStartLoadingFlag, startLoading, tasks]
   );
 
   const uploadFile = useCallback(async (file, role) => {
@@ -713,6 +790,14 @@ const TaskDashboard = () => {
   const renderCreateModal = () => {
     if (!showCreate) return null;
     const totalSplit = splitTrain + splitVal + splitBench;
+    const selectedBaseModel = baseModels.find(
+      (m) => Number(m.id) === Number(baseModelId)
+    );
+    const createExpectedCost =
+      (Number(hyperparams.epochs) || 0) *
+      costPerEpochForModel(baseModelId, selectedBaseModel?.model_name || selectedBaseModel?.display_name);
+    const createCostInsufficient =
+      typeof balance === "number" && createExpectedCost > balance;
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
@@ -956,6 +1041,20 @@ const TaskDashboard = () => {
                   className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-brand-500 dark:border-white/10 dark:bg-navy-700 dark:text-white"
                 />
               </label>
+              <div className="flex flex-col justify-center gap-1 md:col-span-2">
+                <p
+                  className={`text-sm font-semibold ${
+                    createCostInsufficient
+                      ? "text-red-500 dark:text-red-300"
+                      : "text-gray-700 dark:text-white"
+                  }`}
+                >
+                  Expected cost: {formatDollars(createExpectedCost)}
+                </p>
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-300">
+                  Balance: {balanceLabel}
+                </p>
+              </div>
             </div>
           </div>
 
@@ -1152,6 +1251,9 @@ const TaskDashboard = () => {
                     const dataset = item.dataset_config || {};
                     const id = task.id || task.task_id;
                     const status = normalizeStatus(task.status || item.task_status);
+                    const expectedCost = expectedCostForTask(item);
+                    const insufficientBalance =
+                      typeof balance === "number" && expectedCost > balance;
                     return (
                       <tr
                         key={id}
@@ -1179,8 +1281,10 @@ const TaskDashboard = () => {
                               <button
                                 type="button"
                                 onClick={() => startWithLoader(id)}
-                                disabled={startLoading[id]}
-                                className="linear flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition duration-200 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:text-white dark:hover:bg-white/10"
+                                disabled={startLoading[id] || insufficientBalance}
+                                className={`linear flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition duration-200 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:text-white dark:hover:bg-white/10 ${
+                                  insufficientBalance ? "!border-red-300 text-red-500 dark:text-red-300" : ""
+                                }`}
                                 title="Start task"
                               >
                                 {startLoading[id] ? (
@@ -1217,7 +1321,7 @@ const TaskDashboard = () => {
                             <button
                               type="button"
                               onClick={() => startWithLoader(id)}
-                              disabled={startLoading[id]}
+                              disabled={startLoading[id] || insufficientBalance}
                               className="linear mr-2 inline-flex items-center gap-1 rounded-lg bg-emerald-500 px-3 py-2 text-xs font-semibold text-white transition duration-200 hover:bg-emerald-600"
                             >
                               {startLoading[id] ? (
@@ -1249,6 +1353,11 @@ const TaskDashboard = () => {
                               <MdDelete />
                               Delete
                             </button>
+                          )}
+                          {insufficientBalance && (
+                            <p className="mt-2 text-xs font-semibold text-red-500">
+                              Balance {balanceLabel} &lt; expected {formatDollars(expectedCost)}
+                            </p>
                           )}
                         </td>
                       </tr>

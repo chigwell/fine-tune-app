@@ -5,6 +5,7 @@ import MainDashboard from "views/admin/default";
 import ApiKeys from "views/admin/apiKeys";
 import Files from "views/admin/files";
 import Billing from "views/admin/billing";
+import TaskDetails from "views/admin/tasks/TaskDetails";
 
 // Auth Imports
 import SignIn from "views/auth/SignIn";
@@ -17,6 +18,7 @@ import {
   MdOutlineVpnKey,
   MdOutlineFolder,
   MdOutlineReceipt,
+  MdViewList,
 } from "react-icons/md";
 
 const routes = [
@@ -26,6 +28,14 @@ const routes = [
     path: "default",
     icon: <MdHome className="h-6 w-6" />,
     component: <MainDashboard />,
+  },
+  {
+    name: "Task Details",
+    layout: "/admin",
+    path: "tasks/:taskId",
+    icon: <MdViewList className="h-6 w-6" />,
+    component: <TaskDetails />,
+    secondary: true,
   },
   {
     name: "API Keys",

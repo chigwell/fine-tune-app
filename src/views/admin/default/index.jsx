@@ -1,7 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Card from "components/card";
-import { MdDelete, MdOutlineReceipt, MdPlayArrow, MdStop, MdUpload, MdViewList, MdRefresh } from "react-icons/md";
+import {
+  MdDelete,
+  MdOutlineReceipt,
+  MdPlayArrow,
+  MdStop,
+  MdUpload,
+  MdViewList,
+  MdRefresh,
+  MdOpenInNew,
+} from "react-icons/md";
 import { getAuthToken } from "utils/auth";
+import { useNavigate } from "react-router-dom";
 
 const API_BASE_URL =
   process.env.REACT_APP_API_BASE_URL || "http://localhost:8000";
@@ -46,6 +56,7 @@ const defaultHyperparams = {
 };
 
 const TaskDashboard = () => {
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -165,18 +176,10 @@ const TaskDashboard = () => {
     }
   }, [showCreate, refreshBaseModels]);
 
-  const canStart = (status) => {
-    const s = (status || "").toLowerCase();
-    return s === "draft" || s === "cancelled" || s === "failed" || s === "completed";
-  };
-  const canStop = (status) => {
-    const s = (status || "").toLowerCase();
-    return s === "queued" || s === "running";
-  };
-  const canDelete = (status) => {
-    const s = (status || "").toLowerCase();
-    return s !== "queued" && s !== "running";
-  };
+  const normalizeStatus = (s) => (s || "").toString().trim().toLowerCase();
+  const canStart = (status) => normalizeStatus(status) === "draft";
+  const canStop = (status) => normalizeStatus(status) === "queued";
+  const canDelete = (status) => normalizeStatus(status) === "draft";
 
   const performAction = useCallback(
     async (taskId, action) => {
@@ -1168,8 +1171,17 @@ const TaskDashboard = () => {
                         <td className="py-3 pr-0 text-right text-sm">
                           <button
                             type="button"
-                            onClick={() => openLogs(id, task.project_name)}
+                            onClick={() => navigate(`/admin/tasks/${id}`)}
                             className="linear mr-2 inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 transition duration-200 hover:bg-gray-50 dark:border-white/10 dark:text-white dark:hover:bg-white/10"
+                          >
+                            <MdOpenInNew />
+                            View
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => openLogs(id, task.project_name)}
+                            disabled={(status || "").toLowerCase() === "draft"}
+                            className="linear mr-2 inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 transition duration-200 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:text-white dark:hover:bg-white/10"
                           >
                             <MdOutlineReceipt />
                             Logs

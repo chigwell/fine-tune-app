@@ -176,8 +176,14 @@ const TaskDashboard = () => {
     }
   }, [showCreate, refreshBaseModels]);
 
-  const normalizeStatus = (s) => (s || "").toString().trim().toLowerCase();
-  const canStart = (status) => normalizeStatus(status) === "draft";
+  const normalizeStatus = (s) => {
+    const val = (s ?? "draft").toString().trim().toLowerCase();
+    return val || "draft";
+  };
+  const canStart = (status) => {
+    const s = normalizeStatus(status);
+    return s !== "queued" && s !== "running";
+  };
   const canStop = (status) => normalizeStatus(status) === "queued";
   const canDelete = (status) => normalizeStatus(status) === "draft";
 
@@ -1137,11 +1143,11 @@ const TaskDashboard = () => {
 
                 {!loading &&
                   tasks.map((item) => {
-                    const task = item.task || item;
+                    const task = item.task || item || {};
                     const base = item.base_model || {};
                     const dataset = item.dataset_config || {};
                     const id = task.id || task.task_id;
-                    const status = task.status || "draft";
+                    const status = normalizeStatus(task.status);
                     return (
                       <tr
                         key={id}

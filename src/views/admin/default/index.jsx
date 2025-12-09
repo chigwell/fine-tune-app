@@ -86,7 +86,6 @@ const TaskDashboard = () => {
   const singleFileInputRef = useRef(null);
 
   const [hyperparams, setHyperparams] = useState(defaultHyperparams);
-  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const [logsModal, setLogsModal] = useState({
     open: false,
@@ -938,54 +937,26 @@ const TaskDashboard = () => {
           />
 
           <div className="mt-4 rounded-xl border border-gray-100 p-3 dark:border-white/10">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-gray-700 dark:text-white">
-                Advanced options
-              </p>
-              <button
-                type="button"
-                onClick={() => setShowAdvanced((prev) => !prev)}
-                className="text-sm font-semibold text-brand-600 hover:text-brand-500 dark:text-brand-200"
-              >
-                {showAdvanced ? "Hide" : "Show"}
-              </button>
+            <p className="text-sm font-semibold text-gray-700 dark:text-white">
+              Training options
+            </p>
+            <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
+              <label className="flex flex-col gap-1 text-sm font-semibold text-gray-700 dark:text-white">
+                Epochs
+                <input
+                  type="number"
+                  value={hyperparams.epochs}
+                  min={1}
+                  onChange={(e) =>
+                    setHyperparams((prev) => ({
+                      ...prev,
+                      epochs: Number(e.target.value) || 1,
+                    }))
+                  }
+                  className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-brand-500 dark:border-white/10 dark:bg-navy-700 dark:text-white"
+                />
+              </label>
             </div>
-            {showAdvanced && (
-              <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
-                {Object.entries(hyperparams).map(([key, value]) => {
-                  const isBool = typeof value === "boolean";
-                  const isString = typeof value === "string";
-                  return (
-                    <label
-                      key={key}
-                      className="flex flex-col gap-1 text-sm font-semibold text-gray-700 dark:text-white"
-                    >
-                      {key.replace(/_/g, " ")}
-                      <input
-                        type={isBool ? "checkbox" : isString ? "text" : "number"}
-                        checked={isBool ? value : undefined}
-                        value={isBool ? undefined : value}
-                        onChange={(e) =>
-                          setHyperparams((prev) => ({
-                            ...prev,
-                            [key]: isBool
-                              ? e.target.checked
-                              : isString
-                                ? e.target.value
-                                : Number(e.target.value),
-                          }))
-                        }
-                        className={`${
-                          isBool
-                            ? "h-4 w-4"
-                            : "w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 outline-none transition focus:border-brand-500 dark:border-white/10 dark:bg-navy-700 dark:text-white"
-                        }`}
-                      />
-                    </label>
-                  );
-                })}
-              </div>
-            )}
           </div>
 
           {createError && (

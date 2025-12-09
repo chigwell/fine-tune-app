@@ -9,6 +9,7 @@ import {
   MdViewList,
   MdRefresh,
   MdOpenInNew,
+  MdDownload,
 } from "react-icons/md";
 import { getAuthToken } from "utils/auth";
 import { useNavigate } from "react-router-dom";
@@ -76,6 +77,7 @@ const TaskDashboard = () => {
   const [error, setError] = useState("");
   const [balance, setBalance] = useState(null);
   const [balanceStatus, setBalanceStatus] = useState("idle"); // idle | loading | error
+  const [ggufMap, setGgufMap] = useState({});
 
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -111,6 +113,34 @@ const TaskDashboard = () => {
 
   const offset = useMemo(() => page * PAGE_SIZE, [page]);
 
+  const fetchGgufFiles = useCallback(async () => {
+    const token = getAuthToken();
+    if (!token) {
+      setGgufMap({});
+      return;
+    }
+    try {
+      const res = await fetch(`${API_BASE_URL}/files?limit=200&offset=0`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        setGgufMap({});
+        return;
+      }
+      const items = Array.isArray(data?.items) ? data.items : [];
+      const map = {};
+      items.forEach((f) => {
+        if ((f?.file_type || "").toLowerCase() === "gguf" && f?.id) {
+          map[f.id] = f;
+        }
+      });
+      setGgufMap(map);
+    } catch (e) {
+      setGgufMap({});
+    }
+  }, []);
+
   const fetchTasks = useCallback(
     async (pageIndex = page) => {
       const token = getAuthToken();
@@ -142,6 +172,7 @@ const TaskDashboard = () => {
         const items = Array.isArray(data?.items) ? data.items : [];
         setTasks(items);
         setReachedEnd(items.length < PAGE_SIZE);
+        fetchGgufFiles();
       } catch (err) {
         const message =
           err instanceof Error ? err.message : "Unable to load tasks right now.";
@@ -152,7 +183,7 @@ const TaskDashboard = () => {
         setLoading(false);
       }
     },
-    [page]
+    [fetchGgufFiles, page]
   );
 
   useEffect(() => {
@@ -194,6 +225,10 @@ const TaskDashboard = () => {
     return "Unknown";
   }, [balance, balanceStatus]);
 
+  useEffect(() => {
+    fetchGgufFiles();
+  }, [fetchGgufFiles]);
+
   const refreshBaseModels = useCallback(async () => {
     const token = getAuthToken();
     if (!token) return;
@@ -233,10 +268,7 @@ const TaskDashboard = () => {
     const s = normalizeStatus(status);
     return s === "draft";
   };
-  const canStop = (status) => {
-    const s = normalizeStatus(status);
-    return s === "queued" || s === "running";
-  };
+  const canStop = (status) => normalizeStatus(status) === "queued";
   const canDelete = (status) => {
     const s = normalizeStatus(status);
     return s === "draft" || s === "cancelled";
@@ -304,6 +336,43 @@ const TaskDashboard = () => {
     },
     []
   );
+
+  const getGgufFileForTask = useCallback(
+    (taskEntry) => {
+      if (!taskEntry) return null;
+      const task = taskEntry.task || taskEntry || {};
+      const primary = task.primary_gguf_file;
+      if (primary && (primary.file_type || "").toLowerCase() === "gguf") {
+        return primary;
+      }
+      const id = task.primary_gguf_file_id || task.gguf_file_id;
+      if (id && ggufMap[id]) return ggufMap[id];
+      return null;
+    },
+    [ggufMap]
+  );
+
+  const downloadGgufFile = useCallback(async (fileId) => {
+    const token = getAuthToken();
+    if (!token || !fileId) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/files/${fileId}/download`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Download failed");
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      setError("Unable to download file right now.");
+    }
+  }, []);
 
   const startWithLoader = useCallback(
     async (taskId) => {
@@ -1209,14 +1278,15 @@ const TaskDashboard = () => {
             </div>
           )}
 
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full min-w-[900px]">
+      <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[1000px]">
               <thead>
                 <tr className="border-b border-gray-100 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:border-white/10">
                   <th className="py-3 pr-4">Project</th>
                   <th className="py-3 pr-4">Base model</th>
                   <th className="py-3 pr-4">Dataset</th>
                   <th className="py-3 pr-4">Status</th>
+                  <th className="py-3 pr-4">GGUF</th>
                   <th className="py-3 pr-4">Created</th>
                   <th className="py-3 pr-4 text-right">Actions</th>
                 </tr>
@@ -1254,6 +1324,7 @@ const TaskDashboard = () => {
                     const expectedCost = expectedCostForTask(item);
                     const insufficientBalance =
                       typeof balance === "number" && expectedCost > balance;
+                    const ggufFile = getGgufFileForTask(item);
                     return (
                       <tr
                         key={id}
@@ -1295,6 +1366,20 @@ const TaskDashboard = () => {
                               </button>
                             )}
                           </div>
+                        </td>
+                        <td className="py-3 pr-4 text-sm text-gray-700 dark:text-gray-200">
+                          {status === "succeeded" && ggufFile ? (
+                            <button
+                              type="button"
+                              onClick={() => downloadGgufFile(ggufFile.id)}
+                              className="linear inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1 text-xs font-semibold text-gray-700 transition duration-200 hover:bg-gray-50 dark:border-white/10 dark:text-white dark:hover:bg-white/10"
+                            >
+                              <MdDownload />
+                              GGUF
+                            </button>
+                          ) : (
+                            "—"
+                          )}
                         </td>
                         <td className="py-3 pr-4 text-sm text-gray-700 dark:text-gray-200">
                           {formatDate(task.created_at || task.createdAt)}

@@ -22,6 +22,9 @@ export function SidebarLinks(props) {
       if (route.layout === "/auth" && route.path === "sign-in" && status === "authenticated") {
         return null;
       }
+      if (route.hideInSidebar) {
+        return null;
+      }
       if (
         route.layout === "/admin" ||
         route.layout === "/auth" ||

@@ -36,6 +36,7 @@ const routes = [
     icon: <MdViewList className="h-6 w-6" />,
     component: <TaskDetails />,
     secondary: true,
+    hideInSidebar: true,
   },
   {
     name: "API Keys",

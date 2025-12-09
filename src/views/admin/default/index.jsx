@@ -31,6 +31,7 @@ const statusBadgeClass = (status) => {
     case "running":
     case "queued":
       return "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-100";
+    case "succeeded":
     case "completed":
       return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-100";
     case "failed":
@@ -60,6 +61,7 @@ const TaskDashboard = () => {
   const [tasks, setTasks] = useState([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [startLoading, setStartLoading] = useState({});
   const [reachedEnd, setReachedEnd] = useState(false);
   const [error, setError] = useState("");
 
@@ -178,14 +180,32 @@ const TaskDashboard = () => {
 
   const normalizeStatus = (s) => {
     const val = (s ?? "draft").toString().trim().toLowerCase();
+    if (val === "completed") return "succeeded";
     return val || "draft";
   };
   const canStart = (status) => {
     const s = normalizeStatus(status);
-    return s !== "queued" && s !== "running";
+    return s === "draft";
   };
-  const canStop = (status) => normalizeStatus(status) === "queued";
-  const canDelete = (status) => normalizeStatus(status) === "draft";
+  const canStop = (status) => {
+    const s = normalizeStatus(status);
+    return s === "queued" || s === "running";
+  };
+  const canDelete = (status) => {
+    const s = normalizeStatus(status);
+    return s === "draft" || s === "cancelled";
+  };
+
+  const setStartLoadingFlag = useCallback((taskId, value) => {
+    setStartLoading((prev) => {
+      if (value) {
+        return { ...prev, [taskId]: true };
+      }
+      const next = { ...prev };
+      delete next[taskId];
+      return next;
+    });
+  }, []);
 
   const performAction = useCallback(
     async (taskId, action) => {
@@ -222,6 +242,19 @@ const TaskDashboard = () => {
       }
     },
     [fetchTasks, page]
+  );
+
+  const startWithLoader = useCallback(
+    async (taskId) => {
+      if (startLoading[taskId]) return;
+      setStartLoadingFlag(taskId, true);
+      try {
+        await performAction(taskId, "start");
+      } finally {
+        setStartLoadingFlag(taskId, false);
+      }
+    },
+    [performAction, setStartLoadingFlag, startLoading]
   );
 
   const uploadFile = useCallback(async (file, role) => {
@@ -1147,7 +1180,7 @@ const TaskDashboard = () => {
                     const base = item.base_model || {};
                     const dataset = item.dataset_config || {};
                     const id = task.id || task.task_id;
-                    const status = normalizeStatus(task.status);
+                    const status = normalizeStatus(task.status || item.task_status);
                     return (
                       <tr
                         key={id}
@@ -1163,13 +1196,30 @@ const TaskDashboard = () => {
                           {dataset.name || "—"}
                         </td>
                         <td className="py-3 pr-4 text-sm">
-                          <span
-                            className={`rounded-full px-3 py-1 text-xs font-semibold ${statusBadgeClass(
-                              status
-                            )}`}
-                          >
-                            {status}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`rounded-full px-3 py-1 text-xs font-semibold ${statusBadgeClass(
+                                status
+                              )}`}
+                            >
+                              {status}
+                            </span>
+                            {status === "draft" && (
+                              <button
+                                type="button"
+                                onClick={() => startWithLoader(id)}
+                                disabled={startLoading[id]}
+                                className="linear flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition duration-200 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:text-white dark:hover:bg-white/10"
+                                title="Start task"
+                              >
+                                {startLoading[id] ? (
+                                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-transparent" />
+                                ) : (
+                                  <MdPlayArrow />
+                                )}
+                              </button>
+                            )}
+                          </div>
                         </td>
                         <td className="py-3 pr-4 text-sm text-gray-700 dark:text-gray-200">
                           {formatDate(task.created_at || task.createdAt)}
@@ -1195,11 +1245,18 @@ const TaskDashboard = () => {
                           {canStart(status) && (
                             <button
                               type="button"
-                              onClick={() => performAction(id, "start")}
+                              onClick={() => startWithLoader(id)}
+                              disabled={startLoading[id]}
                               className="linear mr-2 inline-flex items-center gap-1 rounded-lg bg-emerald-500 px-3 py-2 text-xs font-semibold text-white transition duration-200 hover:bg-emerald-600"
                             >
-                              <MdPlayArrow />
-                              Start
+                              {startLoading[id] ? (
+                                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/70 border-t-transparent" />
+                              ) : (
+                                <>
+                                  <MdPlayArrow />
+                                  Start
+                                </>
+                              )}
                             </button>
                           )}
                           {canStop(status) && (

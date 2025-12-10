@@ -200,6 +200,12 @@ const Files = () => {
         return cleaned;
       }
     };
+    const ensureZipFilename = (name) => {
+      const base = name || (fileId ? `file-${fileId}` : "download");
+      if (base.toLowerCase().endsWith(".zip")) return base;
+      const trimmed = base.replace(/\.gguf$/i, "").replace(/\.$/, "");
+      return `${trimmed}.zip`;
+    };
 
     try {
       const res = await fetch(endpoint, {
@@ -229,7 +235,9 @@ const Files = () => {
 
       link.href = url;
       if (filename) {
-        link.download = filename;
+        link.download = isGguf ? ensureZipFilename(filename) : filename;
+      } else if (isGguf) {
+        link.download = ensureZipFilename("");
       }
       document.body.appendChild(link);
       link.click();

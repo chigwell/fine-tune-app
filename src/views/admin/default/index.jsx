@@ -373,6 +373,12 @@ const TaskDashboard = () => {
         return cleaned;
       }
     };
+    const ensureZipFilename = (name) => {
+      const base = name || (fileId ? `file-${fileId}` : "download");
+      if (base.toLowerCase().endsWith(".zip")) return base;
+      const trimmed = base.replace(/\.gguf$/i, "").replace(/\.$/, "");
+      return `${trimmed}.zip`;
+    };
 
     try {
       const res = await fetch(`${API_BASE_URL}/files/${fileId}/download-gguf`, {
@@ -386,7 +392,9 @@ const TaskDashboard = () => {
         filenameFromHeaders(res) || file.original_name || file.storage_key || "";
       link.href = url;
       if (filename) {
-        link.download = filename;
+        link.download = ensureZipFilename(filename);
+      } else {
+        link.download = ensureZipFilename("");
       }
       document.body.appendChild(link);
       link.click();

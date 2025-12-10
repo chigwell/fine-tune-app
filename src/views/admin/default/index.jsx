@@ -78,6 +78,7 @@ const TaskDashboard = () => {
   const [balance, setBalance] = useState(null);
   const [balanceStatus, setBalanceStatus] = useState("idle"); // idle | loading | error
   const [ggufMap, setGgufMap] = useState({});
+  const [ggufDownloadingId, setGgufDownloadingId] = useState(null);
 
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -352,25 +353,49 @@ const TaskDashboard = () => {
     [ggufMap]
   );
 
-  const downloadGgufFile = useCallback(async (fileId) => {
+  const downloadGgufFile = useCallback(async (file) => {
+    const fileId = file?.id;
     const token = getAuthToken();
     if (!token || !fileId) return;
+    setError("");
+    setGgufDownloadingId(fileId);
+
+    const filenameFromHeaders = (res) => {
+      const disposition = res.headers.get("Content-Disposition") || "";
+      const match =
+        disposition.match(/filename\*=UTF-8''([^;]+)|filename=\"?([^\";]+)\"?/i);
+      const raw = match?.[1] || match?.[2] || "";
+      const cleaned = raw.replace(/['"]/g, "");
+      if (!cleaned) return "";
+      try {
+        return decodeURIComponent(cleaned);
+      } catch (e) {
+        return cleaned;
+      }
+    };
+
     try {
-      const res = await fetch(`${API_BASE_URL}/files/${fileId}/download`, {
+      const res = await fetch(`${API_BASE_URL}/files/${fileId}/download-gguf`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error("Download failed");
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
+      const filename =
+        filenameFromHeaders(res) || file.original_name || file.storage_key || "";
       link.href = url;
-      link.download = "";
+      if (filename) {
+        link.download = filename;
+      }
       document.body.appendChild(link);
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch (e) {
       setError("Unable to download file right now.");
+    } finally {
+      setGgufDownloadingId(null);
     }
   }, []);
 
@@ -1371,11 +1396,16 @@ const TaskDashboard = () => {
                           {status === "succeeded" && ggufFile ? (
                             <button
                               type="button"
-                              onClick={() => downloadGgufFile(ggufFile.id)}
+                              onClick={() => downloadGgufFile(ggufFile)}
+                              disabled={ggufDownloadingId === ggufFile.id}
                               className="linear inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1 text-xs font-semibold text-gray-700 transition duration-200 hover:bg-gray-50 dark:border-white/10 dark:text-white dark:hover:bg-white/10"
                             >
-                              <MdDownload />
-                              GGUF
+                              {ggufDownloadingId === ggufFile.id ? (
+                                <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-transparent" />
+                              ) : (
+                                <MdDownload />
+                              )}
+                              {ggufDownloadingId === ggufFile.id ? "Preparing..." : "GGUF"}
                             </button>
                           ) : (
                             "—"

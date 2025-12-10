@@ -6,7 +6,13 @@ import React, {
   useState,
 } from "react";
 import Card from "components/card";
-import { MdDelete, MdOutlineFolder, MdRefresh, MdUpload } from "react-icons/md";
+import {
+  MdDelete,
+  MdDownload,
+  MdOutlineFolder,
+  MdRefresh,
+  MdUpload,
+} from "react-icons/md";
 import { getAuthToken } from "utils/auth";
 
 const API_BASE_URL =
@@ -50,6 +56,7 @@ const Files = () => {
   const [reachedEnd, setReachedEnd] = useState(false);
   const [error, setError] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
+  const [downloadingId, setDownloadingId] = useState(null);
 
   const [showUpload, setShowUpload] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -161,6 +168,83 @@ const Files = () => {
     },
     [handleFileSelect]
   );
+
+  const downloadFile = useCallback(async (file) => {
+    if (!file) return;
+    const fileId = file.id || file.file_id;
+    if (!fileId) return;
+
+    const authToken = getAuthToken();
+    if (!authToken) {
+      setError("You need to sign in to download files.");
+      return;
+    }
+    setError("");
+    setDownloadingId(fileId);
+
+    const isGguf = (file.file_type || "").toLowerCase() === "gguf";
+    const endpoint = isGguf
+      ? `${API_BASE_URL}/files/${fileId}/download-gguf`
+      : `${API_BASE_URL}/files/${fileId}/download`;
+
+    const filenameFromHeaders = (res) => {
+      const disposition = res.headers.get("Content-Disposition") || "";
+      const match =
+        disposition.match(/filename\*=UTF-8''([^;]+)|filename=\"?([^\";]+)\"?/i);
+      const raw = match?.[1] || match?.[2] || "";
+      const cleaned = raw.replace(/['"]/g, "");
+      if (!cleaned) return "";
+      try {
+        return decodeURIComponent(cleaned);
+      } catch (e) {
+        return cleaned;
+      }
+    };
+
+    try {
+      const res = await fetch(endpoint, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        const reason =
+          data?.detail ||
+          data?.reason ||
+          data?.message ||
+          "Unable to download file.";
+        throw new Error(reason);
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const filename =
+        filenameFromHeaders(res) ||
+        file.original_name ||
+        file.storage_key ||
+        "";
+
+      link.href = url;
+      if (filename) {
+        link.download = filename;
+      }
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Unable to download file right now.";
+      setError(message);
+    } finally {
+      setDownloadingId(null);
+    }
+  }, []);
 
   const performDelete = useCallback(
     async (fileId, { silent = false, skipRefresh = false } = {}) => {
@@ -560,6 +644,7 @@ const Files = () => {
                   files.map((file) => {
                     const fileId = file.id || file.file_id;
                     const displayName = truncateName(file.original_name, 50);
+                    const isGguf = (file.file_type || "").toLowerCase() === "gguf";
                     return (
                       <tr
                         key={fileId || file.storage_key}
@@ -581,6 +666,21 @@ const Files = () => {
                           {formatDate(file.created_at)}
                         </td>
                         <td className="py-3 pr-0 text-right text-sm">
+                          {isGguf && (
+                            <button
+                              type="button"
+                              onClick={() => downloadFile(file)}
+                              disabled={downloadingId === fileId}
+                              className="linear mr-2 inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 transition duration-200 hover:bg-gray-50 dark:border-white/10 dark:text-white dark:hover:bg-white/10"
+                            >
+                              {downloadingId === fileId ? (
+                                <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-transparent" />
+                              ) : (
+                                <MdDownload />
+                              )}
+                              {downloadingId === fileId ? "Preparing..." : "Download"}
+                            </button>
+                          )}
                           <button
                             type="button"
                             onClick={() => openUploadModal(file)}

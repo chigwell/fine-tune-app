@@ -1,3 +1,14 @@
+const brandPalette = {
+  primary: "#FAA863",
+  accent: "#82DAF1",
+  gradientTop: "#9BD7F4",
+  gradientMid: "#70D1E5",
+  gradientBottom: "#FFD9BA",
+  layerTeal: "#57CEDE",
+  layerBlue: "#88CDF0",
+  layerPeach: "#F1B691",
+};
+
 export const barChartDataDailyTraffic = [
   {
     name: "Daily Traffic",
@@ -79,13 +90,13 @@ export const barChartOptionsDailyTraffic = {
         [
           {
             offset: 0,
-            color: "#4318FF",
+            color: brandPalette.primary,
             opacity: 1,
           },
           {
             offset: 100,
-            color: "rgba(67, 24, 255, 1)",
-            opacity: 0.28,
+            color: brandPalette.layerPeach,
+            opacity: 0.35,
           },
         ],
       ],
@@ -104,7 +115,11 @@ export const barChartOptionsDailyTraffic = {
 
 export const pieChartOptions = {
   labels: ["Your files", "System", "Empty"],
-  colors: ["#4318FF", "#6AD2FF", "#EFF4FB"],
+  colors: [
+    brandPalette.primary,
+    brandPalette.layerPeach,
+    brandPalette.gradientBottom,
+  ],
   chart: {
     width: "50px",
   },
@@ -133,7 +148,11 @@ export const pieChartOptions = {
     },
   },
   fill: {
-    colors: ["#4318FF", "#6AD2FF", "#EFF4FB"],
+    colors: [
+      brandPalette.primary,
+      brandPalette.layerPeach,
+      brandPalette.gradientBottom,
+    ],
   },
   tooltip: {
     enabled: true,
@@ -152,17 +171,17 @@ export const barChartDataWeeklyRevenue = [
   {
     name: "PRODUCT A",
     data: [400, 370, 330, 390, 320, 350, 360, 320, 380],
-    color: "#6AD2Fa",
+    color: brandPalette.primary,
   },
   {
     name: "PRODUCT B",
     data: [400, 370, 330, 390, 320, 350, 360, 320, 380],
-    color: "#4318FF",
+    color: brandPalette.layerPeach,
   },
   {
     name: "PRODUCT C",
     data: [400, 370, 330, 390, 320, 350, 360, 320, 380],
-    color: "#EFF4FB",
+    color: brandPalette.gradientBottom,
   },
 ];
 
@@ -239,12 +258,20 @@ export const barChartOptionsWeeklyRevenue = {
   },
   fill: {
     type: "solid",
-    colors: ["#5E37FF", "#6AD2FF", "#E1E9F8"],
+    colors: [
+      brandPalette.primary,
+      brandPalette.layerPeach,
+      brandPalette.gradientBottom,
+    ],
   },
   legend: {
     show: false,
   },
-  colors: ["#5E37FF", "#6AD2FF", "#E1E9F8"],
+  colors: [
+    brandPalette.primary,
+    brandPalette.layerPeach,
+    brandPalette.gradientBottom,
+  ],
   dataLabels: {
     enabled: false,
   },
@@ -260,12 +287,12 @@ export const lineChartDataTotalSpent = [
   {
     name: "Revenue",
     data: [50, 64, 48, 66, 49, 68],
-    color: "#4318FF",
+    color: brandPalette.primary,
   },
   {
     name: "Profit",
     data: [30, 40, 24, 46, 20, 46],
-    color: "#6AD2FF",
+    color: brandPalette.layerPeach,
   },
 ];
 

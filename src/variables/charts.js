@@ -1,12 +1,12 @@
 const brandPalette = {
-  primary: "#FAA863",
-  accent: "#82DAF1",
-  gradientTop: "#9BD7F4",
-  gradientMid: "#70D1E5",
-  gradientBottom: "#FFD9BA",
-  layerTeal: "#57CEDE",
-  layerBlue: "#88CDF0",
-  layerPeach: "#F1B691",
+  primary: "#83CEF2",
+  accent: "#5EB6E0",
+  gradientTop: "#E4F4FF",
+  gradientMid: "#B7E3F9",
+  gradientBottom: "#5EB6E0",
+  layerTeal: "#6CC7E5",
+  layerBlue: "#99D5F4",
+  layerPeach: "#3D9AC6",
 };
 
 export const barChartDataDailyTraffic = [

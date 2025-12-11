@@ -98,7 +98,9 @@ const TaskDashboard = () => {
   const [splitBench, setSplitBench] = useState(10);
   const [singleFile, setSingleFile] = useState(null);
   const [singleFileError, setSingleFileError] = useState("");
+  const [singleDropActive, setSingleDropActive] = useState(false);
   const singleFileInputRef = useRef(null);
+  const singleDropDepth = useRef(0);
 
   const [hyperparams, setHyperparams] = useState(defaultHyperparams);
 
@@ -524,9 +526,20 @@ const TaskDashboard = () => {
   );
 
   const handleSingleFileSelect = useCallback((file) => {
-    if (!file) return;
+    if (!file) return false;
+    if (!file.name.toLowerCase().endsWith(".jsonl")) {
+      setSingleFileError("Only .jsonl files are allowed.");
+      setSingleFile(null);
+      return false;
+    }
+    if (file.size > 500 * 1024 * 1024) {
+      setSingleFileError("File must be 500 MB or smaller.");
+      setSingleFile(null);
+      return false;
+    }
     setSingleFile(file);
     setSingleFileError("");
+    return true;
   }, []);
 
   const handleUploadFiles = useCallback(
@@ -580,19 +593,7 @@ const TaskDashboard = () => {
       if (!filesPicked.length) return;
 
       if (datasetSource === "auto_split") {
-        const file = filesPicked[0];
-        if (!file.name.toLowerCase().endsWith(".jsonl")) {
-          setSingleFileError("Only .jsonl files are allowed.");
-          setSingleFile(null);
-          return;
-        }
-        if (file.size > 500 * 1024 * 1024) {
-          setSingleFileError("File must be 500 MB or smaller.");
-          setSingleFile(null);
-          return;
-        }
-        setSingleFileError("");
-        handleSingleFileSelect(file);
+        handleSingleFileSelect(filesPicked[0]);
         return;
       }
 
@@ -600,6 +601,43 @@ const TaskDashboard = () => {
     },
     [datasetSource, handleSingleFileSelect, handleUploadFiles]
   );
+
+  const handleSingleDrop = useCallback(
+    (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      singleDropDepth.current = 0;
+      setSingleDropActive(false);
+      const files = Array.from(event.dataTransfer?.files || []);
+      if (!files.length) return;
+      handleSingleFileSelect(files[0]);
+    },
+    [handleSingleFileSelect]
+  );
+
+  const handleSingleDragEnter = useCallback((event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    singleDropDepth.current += 1;
+    setSingleDropActive(true);
+  }, []);
+
+  const handleSingleDragLeave = useCallback((event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    singleDropDepth.current = Math.max(0, singleDropDepth.current - 1);
+    if (singleDropDepth.current === 0) {
+      setSingleDropActive(false);
+    }
+  }, []);
+
+  const handleSingleDragOver = useCallback((event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = "copy";
+    }
+  }, []);
 
   const adjustSplits = useCallback(
     (field, value) => {
@@ -1075,13 +1113,21 @@ const TaskDashboard = () => {
                 </div>
                 <div className="md:col-span-3">
                   <div
-                    className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-center transition hover:border-brand-500 hover:bg-white dark:border-white/20 dark:bg-white/5 dark:hover:border-brand-300 dark:hover:bg-white/10"
+                    className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-4 text-center transition hover:border-brand-500 hover:bg-white dark:hover:border-brand-300 dark:hover:bg-white/10 ${
+                      singleDropActive
+                        ? "border-brand-500 bg-white shadow-sm dark:border-brand-300 dark:bg-white/10"
+                        : "border-gray-300 bg-gray-50 dark:border-white/20 dark:bg-white/5"
+                    }`}
                     onClick={() => {
                       if (singleFileInputRef.current) {
                         singleFileInputRef.current.dataset.role = "auto";
                         singleFileInputRef.current.click();
                       }
                     }}
+                    onDragEnter={handleSingleDragEnter}
+                    onDragOver={handleSingleDragOver}
+                    onDragLeave={handleSingleDragLeave}
+                    onDrop={handleSingleDrop}
                   >
                     <p className="text-sm font-semibold text-navy-700 dark:text-white">
                       Drag & drop or click to upload a single dataset file

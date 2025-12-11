@@ -38,18 +38,24 @@ const costPerEpochForModel = (modelId, modelName) => {
 const formatDollars = (value) => `$${(Number(value) || 0).toFixed(2)}`;
 
 const statusBadgeClass = (status) => {
-  switch ((status || "").toLowerCase()) {
+  const normalized = (status ?? "").toString().trim().toLowerCase();
+  switch (normalized) {
     case "running":
     case "queued":
+    case "in_progress":
       return "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-100";
     case "success":
     case "successful":
     case "succeeded":
     case "completed":
     case "complete":
-      return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-100";
+    case "done":
+    case "finished":
+      return "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-100";
     case "failed":
+    case "fail":
     case "cancelled":
+    case "canceled":
     case "error":
       return "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-100";
     default:
@@ -268,10 +274,10 @@ const TaskDashboard = () => {
 
   const normalizeStatus = (s) => {
     const val = (s ?? "draft").toString().trim().toLowerCase();
-    if (["completed", "complete", "success", "successful", "succeeded"].includes(val)) {
+    if (["completed", "complete", "success", "successful", "succeeded", "done", "finished"].includes(val)) {
       return "succeeded";
     }
-    if (["error"].includes(val)) return "failed";
+    if (["error", "fail", "failed"].includes(val)) return "failed";
     return val || "draft";
   };
   const canStart = (status) => {

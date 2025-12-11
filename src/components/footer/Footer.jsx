@@ -20,7 +20,7 @@ const Footer = () => {
           <li>
             <a
               target="blank"
-              href="https://simmmple.com/licenses"
+              href="https://github.com/chigwell/fine-tune-app/blob/main/LICENSE"
               className="text-base font-medium text-gray-600 hover:text-gray-600"
             >
               License
@@ -33,15 +33,6 @@ const Footer = () => {
               className="text-base font-medium text-gray-600 hover:text-gray-600"
             >
               Terms of Use
-            </a>
-          </li>
-          <li>
-            <a
-              target="blank"
-              href="https://blog.horizon-ui.com/"
-              className="text-base font-medium text-gray-600 hover:text-gray-600"
-            >
-              Blog
             </a>
           </li>
         </ul>

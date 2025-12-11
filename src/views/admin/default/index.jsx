@@ -42,11 +42,15 @@ const statusBadgeClass = (status) => {
     case "running":
     case "queued":
       return "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-100";
+    case "success":
+    case "successful":
     case "succeeded":
     case "completed":
+    case "complete":
       return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-100";
     case "failed":
     case "cancelled":
+    case "error":
       return "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-100";
     default:
       return "bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-white";
@@ -264,7 +268,10 @@ const TaskDashboard = () => {
 
   const normalizeStatus = (s) => {
     const val = (s ?? "draft").toString().trim().toLowerCase();
-    if (val === "completed") return "succeeded";
+    if (["completed", "complete", "success", "successful", "succeeded"].includes(val)) {
+      return "succeeded";
+    }
+    if (["error"].includes(val)) return "failed";
     return val || "draft";
   };
   const canStart = (status) => {
@@ -525,42 +532,129 @@ const TaskDashboard = () => {
     [projectName, splitBench, splitTrain, splitVal]
   );
 
-  const handleSingleFileSelect = useCallback((file) => {
-    if (!file) return false;
-    if (!file.name.toLowerCase().endsWith(".jsonl")) {
-      setSingleFileError("Only .jsonl files are allowed.");
-      setSingleFile(null);
-      return false;
+  const validateJsonlFile = useCallback(async (file) => {
+    const CHUNK_SIZE = 512 * 1024;
+    let offset = 0;
+    let remainder = "";
+    let lineNumber = 0;
+    const validateMessages = (messages, lineNo) => {
+      if (!Array.isArray(messages) || messages.length === 0) {
+        throw new Error(`Line ${lineNo}: "messages" must be a non-empty array.`);
+      }
+      const allowedRoles = { user: true, assistant: true };
+      messages.forEach((msg, idx) => {
+        if (!msg || typeof msg !== "object") {
+          throw new Error(`Line ${lineNo}: messages[${idx}] must be an object.`);
+        }
+        const expectedRole = idx % 2 === 0 ? "user" : "assistant";
+        if (!allowedRoles[msg.role]) {
+          throw new Error(
+            `Line ${lineNo}: messages[${idx}].role must be "user" or "assistant".`
+          );
+        }
+        if (msg.role !== expectedRole) {
+          throw new Error(
+            `Line ${lineNo}: messages[${idx}] should have role "${expectedRole}".`
+          );
+        }
+        if (typeof msg.content !== "string" || !msg.content.trim()) {
+          throw new Error(
+            `Line ${lineNo}: messages[${idx}].content must be a non-empty string.`
+          );
+        }
+      });
+    };
+
+    while (offset < file.size) {
+      // Read incrementally to avoid loading large files at once.
+      // eslint-disable-next-line no-await-in-loop
+      const chunk = await file.slice(offset, offset + CHUNK_SIZE).text();
+      offset += CHUNK_SIZE;
+      const lines = (remainder + chunk).split(/\r?\n/);
+      remainder = lines.pop() || "";
+      for (const line of lines) {
+        const trimmed = line.trim();
+        lineNumber += 1;
+        if (!trimmed) continue;
+        let parsed;
+        try {
+          parsed = JSON.parse(trimmed);
+        } catch (e) {
+          throw new Error(`Line ${lineNumber}: not valid JSON.`);
+        }
+        if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+          throw new Error(`Line ${lineNumber}: entry must be an object.`);
+        }
+        validateMessages(parsed.messages, lineNumber);
+      }
     }
-    if (file.size > 500 * 1024 * 1024) {
-      setSingleFileError("File must be 500 MB or smaller.");
-      setSingleFile(null);
-      return false;
+
+    const last = remainder.trim();
+    if (last) {
+      lineNumber += 1;
+      let parsed;
+      try {
+        parsed = JSON.parse(last);
+      } catch (e) {
+        throw new Error(`Line ${lineNumber}: not valid JSON.`);
+      }
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        throw new Error(`Line ${lineNumber}: entry must be an object.`);
+      }
+      validateMessages(parsed.messages, lineNumber);
     }
-    setSingleFile(file);
-    setSingleFileError("");
-    return true;
   }, []);
+
+  const handleSingleFileSelect = useCallback(
+    async (file) => {
+      if (!file) return false;
+      if (!file.name.toLowerCase().endsWith(".jsonl")) {
+        setSingleFileError("Only .jsonl files are allowed.");
+        setSingleFile(null);
+        return false;
+      }
+      if (file.size > 500 * 1024 * 1024) {
+        setSingleFileError("File must be 500 MB or smaller.");
+        setSingleFile(null);
+        return false;
+      }
+      setSingleFileError("");
+      try {
+        await validateJsonlFile(file);
+      } catch (e) {
+        setSingleFile(null);
+        setSingleFileError(e instanceof Error ? e.message : "Invalid JSONL format.");
+        return false;
+      }
+      setSingleFile(file);
+      return true;
+    },
+    [validateJsonlFile]
+  );
 
   const handleUploadFiles = useCallback(
     async (fileList, role) => {
       if (!fileList.length) return;
+      setCreateError("");
       setUploadingRole(role);
       try {
         for (const file of fileList) {
           if (!file.name.toLowerCase().endsWith(".jsonl")) {
             setCreateError("Only .jsonl files are allowed.");
-            continue;
+            return;
           }
           if (file.size > 500 * 1024 * 1024) {
             setCreateError("File must be 500 MB or smaller.");
-            continue;
+            return;
           }
+          // eslint-disable-next-line no-await-in-loop
+          await validateJsonlFile(file);
+          // eslint-disable-next-line no-await-in-loop
           const uploaded = await uploadFile(file, role);
           const newId = uploaded?.id || uploaded?.file_id;
           if (!newId) {
             setCreateError("Upload failed: missing file id.");
-            continue;
+            return;
           }
           const displayName =
             uploaded?.original_name || file.name || uploaded?.storage_key || `file-${newId}`;
@@ -581,11 +675,11 @@ const TaskDashboard = () => {
         setUploadingRole("");
       }
     },
-    [uploadFile]
+    [uploadFile, validateJsonlFile]
   );
 
   const handleFileInputChange = useCallback(
-    (event) => {
+    async (event) => {
       const input = event.target;
       const filesPicked = Array.from(input.files || []);
       const role = input.dataset.role || "train";
@@ -593,24 +687,24 @@ const TaskDashboard = () => {
       if (!filesPicked.length) return;
 
       if (datasetSource === "auto_split") {
-        handleSingleFileSelect(filesPicked[0]);
+        await handleSingleFileSelect(filesPicked[0]);
         return;
       }
 
-      handleUploadFiles(filesPicked, role);
+      await handleUploadFiles(filesPicked, role);
     },
     [datasetSource, handleSingleFileSelect, handleUploadFiles]
   );
 
   const handleSingleDrop = useCallback(
-    (event) => {
+    async (event) => {
       event.preventDefault();
       event.stopPropagation();
       singleDropDepth.current = 0;
       setSingleDropActive(false);
       const files = Array.from(event.dataTransfer?.files || []);
       if (!files.length) return;
-      handleSingleFileSelect(files[0]);
+      await handleSingleFileSelect(files[0]);
     },
     [handleSingleFileSelect]
   );

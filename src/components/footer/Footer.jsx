@@ -29,7 +29,7 @@ const Footer = () => {
           <li>
             <a
               target="blank"
-              href="https://simmmple.com/terms-of-service"
+              href="https://github.com/chigwell/fine-tune-app/blob/main/TERMS.md"
               className="text-base font-medium text-gray-600 hover:text-gray-600"
             >
               Terms of Use

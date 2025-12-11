@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Card from "components/card";
-import { MdOutlineReceipt, MdRefresh } from "react-icons/md";
+import { MdCreditCard, MdOutlineReceipt, MdRefresh } from "react-icons/md";
+import { useAuth } from "context/AuthContext";
 import { getAuthToken } from "utils/auth";
 
 const API_BASE_URL =
@@ -29,13 +30,19 @@ const prettifyType = (value) => {
 };
 
 const Billing = () => {
+  const { email } = useAuth();
   const [transactions, setTransactions] = useState([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [reachedEnd, setReachedEnd] = useState(false);
   const [error, setError] = useState("");
+  const [showTopup, setShowTopup] = useState(false);
 
   const offset = useMemo(() => page * PAGE_SIZE, [page]);
+  const topupLink = useMemo(() => {
+    const encodedEmail = encodeURIComponent(email || "");
+    return `https://buy.stripe.com/6oU8wRgMX2mD9vQ4pp1RC01?prefilled_email=${encodedEmail}`;
+  }, [email]);
 
   const fetchTransactions = useCallback(
     async (pageIndex = page) => {
@@ -89,6 +96,56 @@ const Billing = () => {
     fetchTransactions(page);
   }, [page, fetchTransactions]);
 
+  const renderTopupModal = () => {
+    if (!showTopup) return null;
+
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+        <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-3xl dark:bg-navy-800">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-200">
+              <MdCreditCard className="text-xl" />
+            </div>
+            <div className="flex-1">
+              <p className="text-lg font-semibold text-navy-700 dark:text-white">
+                Top up balance
+              </p>
+              <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                Use the same email you use for this account so your payment is linked correctly.
+              </p>
+              <p className="mt-2 text-sm font-semibold text-gray-800 dark:text-gray-100">
+                Prefilled email:{" "}
+                <span className="font-mono break-all text-brand-600 dark:text-brand-200">
+                  {email || "your account email"}
+                </span>
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setShowTopup(false)}
+              className="linear rounded-lg border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition duration-200 hover:bg-gray-50 dark:border-white/10 dark:text-white dark:hover:bg-white/10"
+            >
+              Cancel
+            </button>
+            <a
+              href={topupLink}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => setShowTopup(false)}
+              className="linear inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-semibold text-white transition duration-200 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-300"
+            >
+              <MdCreditCard />
+              Open top-up
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="mt-5">
       <div className="grid grid-cols-1 gap-5">
@@ -107,6 +164,13 @@ const Billing = () => {
               </p>
             </div>
             <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setShowTopup(true)}
+                className="linear rounded-xl bg-brand-500 px-4 py-2 text-sm font-semibold text-white transition duration-200 hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-300"
+              >
+                Top up
+              </button>
               <button
                 type="button"
                 onClick={() => fetchTransactions(page)}
@@ -226,6 +290,7 @@ const Billing = () => {
           </div>
         </Card>
       </div>
+      {renderTopupModal()}
     </div>
   );
 };

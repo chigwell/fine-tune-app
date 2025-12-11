@@ -11,7 +11,7 @@ const Footer = () => {
           <li>
             <a
               target="blank"
-              href="mailto:hello@simmmple.com"
+              href="mailto:support@fine-tune.app"
               className="text-base font-medium text-gray-600 hover:text-gray-600"
             >
               Support

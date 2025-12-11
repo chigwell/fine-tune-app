@@ -16,7 +16,7 @@ import {
 import { getAuthToken } from "utils/auth";
 
 const API_BASE_URL =
-  process.env.REACT_APP_API_BASE_URL || "http://localhost:8000";
+  process.env.REACT_APP_API_BASE_URL || "https://api.fine-tune.app";
 const PAGE_SIZE = 10;
 const MAX_SIZE_BYTES = 500 * 1024 * 1024;
 const ALLOWED_FILE_TYPES = ["train", "validation", "benchmark"];
